@@ -25,10 +25,17 @@ class Generic():
     def sanction(self, current_time, available_time):
         used_time = self.run(current_time, available_time)
         if (used_time > 0):
-            np.concatenate([self.exec_logs,
-                            [[current_time, current_time + used_time],
-                             [1, 0]]], axis=1)
-        return used_time
+            if (self.exec_logs.size != 0 and
+                    self.exec_logs[0, -1] == current_time):
+                self.exec_logs[0, -2:] = [current_time + used_time,
+                                          current_time + used_time]
+            else:
+                self.exec_logs = np.concatenate([self.exec_logs,
+                                                 [[current_time, current_time,
+                                                   current_time + used_time,
+                                                   current_time + used_time],
+                                                  [1, 0, 0, 1]]], axis=1)
+        return used_time, self.query(current_time+used_time)
 
     def get_absolute_deadline(self, current_time):
         return current_time + self.unit
@@ -74,6 +81,12 @@ class Aperiodic(Generic):
         else:
             return 0
 
+    def get_absolute_deadline(self, current_time):
+        if (current_time >= self.a):
+            return self.a + self.d
+        else:
+            return -1
+
 
 class Server(Generic):
     def __init__(self, q, t, index=None):
@@ -103,5 +116,5 @@ class Server(Generic):
         self.update_budget()
         available_time = min(available_time, self.q_rem)
         used_time = 0
-        for job in jobs:
+        for job in self.jobs:
             job_time = job.sanction()
