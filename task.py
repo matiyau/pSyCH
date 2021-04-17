@@ -94,6 +94,7 @@ class Server(Generic):
                          {"q": q, "q_rem": 0, "t": t})
         self.u = q/t
         self.q_rem = 0
+        self.q_logs = np.array([[], []])
         self.jobs = []
 
     def modify_job(self):
@@ -111,10 +112,19 @@ class Server(Generic):
         return min(crit_tm_self, crit_tms_jobs[crit_tms_jobs >= 0].min())
 
     def run(self, current_time, available_time):
+        self.q_logs = np.concatenate([self.q_logs,
+                                      [[current_time], [self.q_rem]]], axis=1)
         # TODO: Write Function and Add additional parameters for updating
         # budget
-        self.update_budget()
+        self.update_budget(current_time)
+        self.q_logs = np.concatenate([self.q_logs,
+                                      [[current_time], [self.q_rem]]], axis=1)
         available_time = min(available_time, self.q_rem)
-        used_time = 0
         for job in self.jobs:
-            job_time = job.sanction()
+            used_time, _ = job.sanction(current_time)
+            if (used_time != 0):
+                break
+        self.q_rem -= used_time
+        self.q_logs = np.concatenate([self.q_logs, [[current_time + used_time],
+                                                    [self.q_rem]]], axis=1)
+        return used_time
