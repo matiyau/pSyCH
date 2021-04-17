@@ -33,10 +33,11 @@ class Generic():
             if (len(self.crit_tms) == 0):
                 self.crit_tms = [current_time]
             self.upd_prio_order(current_time)
+            qu = self.prio_queue
             for task in self.prio_queue:
                 used_time, crit_tm = task.sanction(current_time,
                                                    self.crit_tms[0] -
                                                    current_time)
-                if crit_tm not in self.crit_tms:
+                if (crit_tm >= 0) and (crit_tm not in self.crit_tms):
                     bs.insort(self.crit_tms, crit_tm)
                 current_time += used_time
