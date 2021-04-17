@@ -32,6 +32,13 @@ class Sched(sched.Generic):
 
 class TBS(tk.Server):
     def modify_job(self, current_time, job_index):
+        job = self.jobs[job_index]
+        if (job.a > current_time):
+            return
+
+        if (job.get_absolute_deadline(current_time) != -1):
+            return
+
         if job_index == 0:
             prev_d = 0
         else:
@@ -39,8 +46,11 @@ class TBS(tk.Server):
                                1].get_absolute_deadline(current_time)
 
         deadline = max(self.jobs[job_index].a, prev_d) + \
-            self.jobs[job_index].c/self.u
-        self.jobs[job_index].set_absolute_deadline(deadline)
+            job.c/self.u
+        job.set_absolute_deadline(deadline)
+        self.set_rem_budget(current_time,
+                            sum([job.c_rem
+                                 for job in self.jobs[:job_index+1]]))
 
     def get_self_crit_tm(self, current_time):
         return -1
@@ -81,6 +91,3 @@ class CBS(tk.Server):
             return current_time
         else:
             return -1
-
-    def update_budget(self, current_time):
-        self.q_rem = self.q
