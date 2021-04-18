@@ -16,6 +16,7 @@ class Generic():
         self.tasks = []
         self.crit_tms = [0]
         self.prio_queue = []
+        self.end_time = 0
 
     def register_task(self, task):
         self.tasks.append(task)
@@ -24,12 +25,13 @@ class Generic():
         self.prio_queue = [task for task in self.tasks]
 
     def create(self, end_time):
+        self.end_time = end_time
         for task in self.tasks:
             task.reset()
         self.crit_tms = [0]
         while True:
             current_time = self.crit_tms[0]
-            if (current_time >= end_time):
+            if (current_time >= self.end_time):
                 break
             self.crit_tms = self.crit_tms[1:]
             if (len(self.crit_tms) == 0):
@@ -45,13 +47,28 @@ class Generic():
                 current_time += used_time
 
 
+class FCFS(Generic):
+    def upd_prio_order(self, current_time):
+        if (len(self.prio_queue) == 0):
+            self.prio_queue = [task for _, task in
+                               sorted(zip([task.a for task in self.tasks],
+                                          self.tasks))]
+            total_time = 0
+            for task in self.tasks:
+                total_time = max(total_time, task.a) + task.c
+            bs.insort(self.crit_tms, total_time)
+            self.end_time = total_time
+
+
 class EDD(Generic):
     def upd_prio_order(self, current_time):
         if (len(self.prio_queue) == 0):
             self.prio_queue = [task for _, task in
                                sorted(zip([task.d for task in self.tasks],
                                           self.tasks))]
-            bs.insort(self.crit_tms, sum([task.d for task in self.tasks]))
+            total_c = sum([task.c for task in self.tasks])
+            bs.insort(self.crit_tms, total_c)
+            self.end_time = total_c
 
 
 class EDF(Generic):
