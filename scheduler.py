@@ -45,6 +45,15 @@ class Generic():
                 current_time += used_time
 
 
+class EDD(Generic):
+    def upd_prio_order(self, current_time):
+        if (len(self.prio_queue) == 0):
+            self.prio_queue = [task for _, task in
+                               sorted(zip([task.d for task in self.tasks],
+                                          self.tasks))]
+            bs.insort(self.crit_tms, sum([task.d for task in self.tasks]))
+
+
 class EDF(Generic):
     def upd_prio_order(self, current_time):
         unq = np.unique([task.get_absolute_deadline(current_time)
