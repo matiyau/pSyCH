@@ -12,6 +12,7 @@ import numpy as np
 
 class Generic():
     def __init__(self, name, tm_params):
+        self.name = name
         self.unit = np.gcd.reduce([pair[1] for pair in tm_params.items()])
         for key in tm_params:
             setattr(self, key, tm_params[key])

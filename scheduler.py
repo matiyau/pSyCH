@@ -8,6 +8,7 @@ Created on Sat Apr 17 08:08:44 2021
 
 from . import task as tk
 import bisect as bs
+from copy import deepcopy as dc
 import numpy as np
 
 
@@ -90,6 +91,80 @@ class EDF(Generic):
                      isinstance(task, tk.Periodic))]
             self.prio_queue += srvs
             self.prio_queue += prdc
+
+
+class Bratley(Generic):
+    def get_tree(self, elapsed_time, tasks, pruning=True):
+        tree = []
+        for i in range(0, len(tasks)):
+            task = tasks[i]
+            index = task.name.split(" ")[1]
+            elp_time_new = max(elapsed_time, task.a) + task.c
+            if (pruning is True and
+                    (elp_time_new > task.get_absolute_deadline(elp_time_new))):
+                return ["X {" + index + "}"]
+
+            subtree = ["(" + index + ", " + str(elp_time_new) + ")"]
+            pending = tasks[:i] + tasks[i:]
+            pending.remove(task)
+            subsubtree = self.get_tree(elp_time_new, pending)
+            if (len(subsubtree) == 0):
+                subtree[0] += " [Done]"
+            else:
+                subtree += subsubtree
+            tree.append(subtree)
+        return tree
+
+
+class Spring(Generic):
+    def __init__(self, h_exp):
+        Generic.__init__(self)
+        self.H_coeffs = {"a": 0, "C": 0, "d": 0, "D": 0, "L": 0}
+        terms = [term.strip() for term in h_exp.split("+")]
+        for term in terms:
+            if (len(term) == 1):
+                term = "1" + term
+            self.H_coeffs[term[-1]] = int(term[:-1])
+
+    def H(self, elapsed_time, task):
+        vals = {"a": task.a, "C": task.c, "D": task.d,
+                "d": task.get_absolute_deadline(elapsed_time),
+                "L": elapsed_time-task.get_absolute_deadline(elapsed_time)}
+        H_val = 0
+        for param in self.H_coeffs:
+            H_val += (self.H_coeffs[param] * vals[param])
+
+        return H_val
+
+    def get_tree(self, elapsed_time, tasks):
+        tree = []
+        H_vals = []
+        elp_times_new = []
+        for task in tasks:
+            index = task.name.split(" ")[1]
+            elp_time_new = max(elapsed_time, task.a) + task.c
+            H_val = self.H(elp_time_new, task)
+            H_vals.append(H_val)
+            elp_times_new.append(elp_time_new)
+            tree.append(["(" + index + ", " + str(H_val) + ")"])
+        if (len(tasks) == 1):
+            return tree
+        i = np.argmin(H_vals)
+        task = tasks[i]
+        elp_time_new = elp_times_new[i]
+        pending = tasks[:i] + tasks[i:]
+        pending.remove(task)
+        tree[i][0] += " min"
+        subsubtree = self.get_tree(elp_time_new, pending)
+        tree[i] += subsubtree
+        return tree
+
+
+    def create(self, pruning=True):
+        tree = ["(, )"]
+        tree += self.get_tree(0, self.tasks)
+        # sl.draw_tree(tree, pruning)
+        return tree
 
 
 class RM(Generic):
