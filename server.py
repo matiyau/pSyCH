@@ -6,28 +6,8 @@ Created on Sat Apr 17 16:35:08 2021
 @author: n7
 """
 
-from . import scheduler as sched
 from . import task as tk
 import numpy as np
-
-
-class Sched(sched.Generic):
-    def upd_prio_order(self, current_time):
-        unq = np.unique([task.get_absolute_deadline(current_time)
-                         for task in self.tasks])
-
-        # Push negative deadlines to the end
-        unq = np.concatenate([unq[unq >= 0], unq[unq < 0]])
-        self.prio_queue = []
-        for d in unq:
-            srvs = [task for task in self.tasks if
-                    ((task.get_absolute_deadline(current_time) == d) and
-                     isinstance(task, tk.Server))]
-            prdc = [task for task in self.tasks if
-                    ((task.get_absolute_deadline(current_time) == d) and
-                     isinstance(task, tk.Periodic))]
-            self.prio_queue += srvs
-            self.prio_queue += prdc
 
 
 class TBS(tk.Server):

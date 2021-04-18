@@ -6,7 +6,9 @@ Created on Sat Apr 17 08:08:44 2021
 @author: n7
 """
 
+from . import task as tk
 import bisect as bs
+import numpy as np
 
 
 class Generic():
@@ -41,3 +43,22 @@ class Generic():
                 if (crit_tm >= 0) and (crit_tm not in self.crit_tms):
                     bs.insort(self.crit_tms, crit_tm)
                 current_time += used_time
+
+
+class EDF(Generic):
+    def upd_prio_order(self, current_time):
+        unq = np.unique([task.get_absolute_deadline(current_time)
+                         for task in self.tasks])
+
+        # Push negative deadlines to the end
+        unq = np.concatenate([unq[unq >= 0], unq[unq < 0]])
+        self.prio_queue = []
+        for d in unq:
+            srvs = [task for task in self.tasks if
+                    ((task.get_absolute_deadline(current_time) == d) and
+                     isinstance(task, tk.Server))]
+            prdc = [task for task in self.tasks if
+                    ((task.get_absolute_deadline(current_time) == d) and
+                     isinstance(task, tk.Periodic))]
+            self.prio_queue += srvs
+            self.prio_queue += prdc
