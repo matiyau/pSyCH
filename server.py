@@ -19,10 +19,27 @@ class PS(tk.Server):
             self.set_rem_budget(current_time, 0)
 
     def get_self_crit_tm(self, current_time):
-        # If no jobs are pending, but budget is non-zero, set critical time to
-        # current time so that budget is reduced to zero in the next run
-        if (len(self.get_pending_jobs(current_time)) == 0 and
-                self.get_rem_budget() != 0):
+        # If budget is non-zero, set critical time to current time so that
+        # in next iteration either budget is reduced to zero (no pending tasks)
+        # or pengind tasks are executed with the available budget.
+        if (self.get_rem_budget() != 0):
+            return current_time
+        else:
+            return (current_time//self.t + 1) * self.t
+
+
+class DS(tk.Server):
+    def update_budget(self, current_time):
+        if (current_time % self.t == 0):
+            self.log_rem_budget(current_time)
+            self.set_rem_budget(current_time, self.q)
+
+    def get_self_crit_tm(self, current_time):
+        # If budget is non-zero, and tasks are pending, set critical time to
+        # current time so that in next iteration pending tasks are executed
+        # with the available budget.
+        if (self.get_rem_budget() != 0 and
+                len(self.get_pending_jobs(current_time)) != 0):
             return current_time
         else:
             return (current_time//self.t + 1) * self.t
