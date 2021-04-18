@@ -62,3 +62,33 @@ class EDF(Generic):
                      isinstance(task, tk.Periodic))]
             self.prio_queue += srvs
             self.prio_queue += prdc
+
+
+class RM(Generic):
+    def upd_prio_order(self, current_time):
+        if (len(self.prio_queue) == 0):
+            unq = np.unique([task.t for task in self.tasks])
+            for t in unq:
+                srvs = [task for task in self.tasks if
+                        ((task.t == t) and isinstance(task, tk.Server))]
+                prdc = [task for task in self.tasks if
+                        ((task.t == t) and isinstance(task, tk.Periodic))]
+                self.prio_queue += srvs
+                self.prio_queue += prdc
+
+        for task in self.tasks:
+            if (isinstance(task, tk.Server)):
+                task.update_budget(current_time)
+
+
+class DM(Generic):
+    def upd_prio_order(self, current_time):
+        if (len(self.prio_queue) == 0):
+            unq = np.unique([task.t for task in self.tasks])
+            for t in unq:
+                srvs = [task for task in self.tasks if
+                        ((task.t == t) and isinstance(task, tk.Server))]
+                prdc = [task for task in self.tasks if
+                        ((task.t == t) and isinstance(task, tk.Periodic))]
+                self.prio_queue += srvs
+                self.prio_queue += prdc

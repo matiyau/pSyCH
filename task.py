@@ -171,6 +171,10 @@ class Server(Generic):
         for i in range(0, len(self.jobs)):
             self.modify_job(current_time, i)
 
+    def get_pending_jobs(self, current_time):
+        return [job for job in self.jobs if (job.a <= current_time and
+                                             job.c_rem != 0)]
+
     def get_self_crit_tm(self, current_time):
         return current_time + self.unit
 

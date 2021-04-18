@@ -10,6 +10,24 @@ from . import task as tk
 import numpy as np
 
 
+class PS(tk.Server):
+    def update_budget(self, current_time):
+        if (current_time % self.t == 0):
+            self.log_rem_budget(current_time)
+            self.set_rem_budget(current_time, self.q)
+        if (len(self.get_pending_jobs(current_time)) == 0):
+            self.set_rem_budget(current_time, 0)
+
+    def get_self_crit_tm(self, current_time):
+        # If no jobs are pending, but budget is non-zero, set critical time to
+        # current time so that budget is reduced to zero in the next run
+        if (len(self.get_pending_jobs(current_time)) == 0 and
+                self.get_rem_budget() != 0):
+            return current_time
+        else:
+            return (current_time//self.t + 1) * self.t
+
+
 class TBS(tk.Server):
     def modify_job(self, current_time, job_index):
         job = self.jobs[job_index]
