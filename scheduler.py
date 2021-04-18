@@ -50,9 +50,10 @@ class Generic():
 class FCFS(Generic):
     def upd_prio_order(self, current_time):
         if (len(self.prio_queue) == 0):
-            self.prio_queue = [task for _, task in
-                               sorted(zip([task.a for task in self.tasks],
-                                          self.tasks))]
+            srt = [i for _, i in
+                   sorted(zip([task.a for task in self.tasks],
+                              [j for j in range(len(self.tasks))]))]
+            self.prio_queue = [self.tasks[i] for i in srt]
             total_time = 0
             for task in self.tasks:
                 total_time = max(total_time, task.a) + task.c
@@ -63,9 +64,10 @@ class FCFS(Generic):
 class EDD(Generic):
     def upd_prio_order(self, current_time):
         if (len(self.prio_queue) == 0):
-            self.prio_queue = [task for _, task in
-                               sorted(zip([task.d for task in self.tasks],
-                                          self.tasks))]
+            srt = [i for _, i in
+                   sorted(zip([task.d for task in self.tasks],
+                              [j for j in range(len(self.tasks))]))]
+            self.prio_queue = [self.tasks[i] for i in srt]
             total_c = sum([task.c for task in self.tasks])
             bs.insort(self.crit_tms, total_c)
             self.end_time = total_c
