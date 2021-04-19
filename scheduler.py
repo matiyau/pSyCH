@@ -20,6 +20,7 @@ class Generic():
         self.crit_tms = [0]
         self.prio_queue = []
         self.end_time = 0
+        self.unit = 1
 
     def register_task(self, task):
         self.tasks.append(task)
@@ -31,8 +32,10 @@ class Generic():
         self.end_time = end_time
         for task in self.tasks:
             task.reset()
+        self.unit = np.gcd.reduce([task.unit for task in self.tasks])
         self.crit_tms = [0]
         while True:
+            tmp = dc(self.crit_tms)
             current_time = self.crit_tms[0]
             if (current_time >= self.end_time):
                 break
@@ -40,13 +43,17 @@ class Generic():
             if (len(self.crit_tms) == 0):
                 self.crit_tms = [current_time]
             self.upd_prio_order(current_time)
+            # print(current_time, [job.name for job in self.prio_queue])
             for task in self.prio_queue:
+                # print((self.crit_tms[0]-current_time), self.crit_tms[0])
                 used_time, crit_tm = task.sanction(current_time,
                                                    self.crit_tms[0] -
                                                    current_time)
                 if (crit_tm >= 0) and (crit_tm not in self.crit_tms):
                     bs.insort(self.crit_tms, crit_tm)
                 current_time += used_time
+            if (tmp == self.crit_tms):
+                bs.insort(self.crit_tms, self.crit_tms[0] + self.unit)
 
     def plot(self):
         plt_reqs = [task.get_subplot_req() for task in self.tasks]
@@ -58,6 +65,8 @@ class Generic():
                 plt_ratios.append(ratio)
         fig, ax = plt.subplots(sum(plt_counts), 1, sharex=True,
                                gridspec_kw={'height_ratios': plt_ratios})
+        if (sum(plt_counts) == 1):
+            ax = [ax]
         j=0
         for i in range(0, len(self.tasks)):
             self.tasks[i].subplot([ax[k] for k in range(j, j+plt_counts[i])],
@@ -106,8 +115,12 @@ class EDF(Generic):
             prdc = [task for task in self.tasks if
                     ((task.get_absolute_deadline(current_time) == d) and
                      isinstance(task, tk.Periodic))]
+            aprd = [task for task in self.tasks if
+                    ((task.get_absolute_deadline(current_time) == d) and
+                     isinstance(task, tk.Aperiodic))]
             self.prio_queue += srvs
             self.prio_queue += prdc
+            self.prio_queue += aprd
 
 
 class Bratley(Generic):

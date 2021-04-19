@@ -74,10 +74,14 @@ class Generic():
         if (hide_yticks):
             ax.get_yaxis().set_ticks([])
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-        ax.set_ylim(0, 2*quant[1].max())
         ax.set_xlim(0, end_time)
         ax.set_xticks(np.arange(0, end_time, 1))
+        ax.grid(True, which="both")
 
+        if (quant.size == 0):
+            return
+
+        ax.set_ylim(0, 2*quant[1].max())
         ax.fill_between(quant[0], quant[1], 0, color=color, label=self.name)
         if (quant_annots):
             brk_pts = quant[0][:-1][quant[1][:-1] !=
@@ -85,7 +89,6 @@ class Generic():
             for pts in brk_pts:
                 ax.text(pts.mean(), 0.5, str(int(pts[1] - pts[0])),
                         ha="center", va="center", size=14, weight="bold")
-        ax.grid(True, which="both")
         if (legend):
             ax.legend(ncol=5)
 
