@@ -8,6 +8,7 @@ Created on Thu Apr 15 23:02:01 2021
 
 import numpy as np
 from matplotlib.ticker import MaxNLocator
+from . import utils as ut
 
 
 class Generic():
@@ -53,6 +54,7 @@ class Generic():
     def plt_template(self, ax, cust_quant=None, end_time=-1, y_label=None,
                      hide_yticks=True, color="#B3B3B3", legend=False):
         if (cust_quant is None):
+            self.exec_logs = ut.filter_sequence(self.exec_logs)
             quant = self.exec_logs
             quant_annots = True
         else:
@@ -281,5 +283,7 @@ class Server(Generic):
                 axs[0].arrow(job.ds_abs[-1], 1.7, 0, -1.2,
                              width=0.04, head_width=0.3, head_length=0.5,
                              color=clr)
+
+        self.q_logs = ut.filter_sequence(self.q_logs)
         self.plt_template(axs[1], cust_quant=self.q_logs, end_time=end_time,
                           y_label="Budget", hide_yticks=False, color="#FF8000")
