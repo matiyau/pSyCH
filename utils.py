@@ -14,3 +14,15 @@ def filter_sequence(seq):
     brk_pts = np.unique(np.concatenate([[0], brk_pts, brk_pts+1,
                                         [seq[1].size-1]]))
     return seq[:, brk_pts]
+
+
+def arrow(ax, x, clr, down=True, major=True):
+    styles = ["dotted", "solid"]
+    alphas = [0.8, 1]
+    mj = int(major)
+    dn = int(down)
+    y = dn * (1.3 + 0.4*mj)
+    dy = -2*(dn-0.5)*(0.9 + 0.4*mj)
+    width = 0.08 + 0.04*mj
+    ax.arrow(x, y, 0, dy, width=width, head_width=0.45, head_length=0.4,
+             color=clr, ls=styles[mj], alpha=alphas[mj])

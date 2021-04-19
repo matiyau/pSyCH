@@ -8,6 +8,7 @@ Created on Sat Apr 17 16:35:08 2021
 
 from . import task as tk
 import numpy as np
+from . import utils as ut
 
 
 class PS(tk.Server):
@@ -46,29 +47,47 @@ class DS(tk.Server):
 
 
 class TBS(tk.Server):
+    def __init__(self, q, t, index=None):
+        tk.Server.__init__(self, q, t, index)
+        self.opt_init = False
+
     def modify_job(self, current_time, job_index):
-        job = self.jobs[job_index]
-        if (job.a > current_time):
-            return
+        if not self.opt_init:
+            job = self.jobs[job_index]
+            if (job.a > current_time):
+                return
 
-        if (job.get_absolute_deadline(current_time) != -1):
-            return
+            if (job.get_absolute_deadline(current_time) != -1):
+                return
 
-        if job_index == 0:
-            prev_d = 0
-        else:
-            prev_d = self.jobs[job_index -
-                               1].get_absolute_deadline(current_time)
+            if job_index == 0:
+                prev_d = 0
+            else:
+                prev_d = self.jobs[job_index -
+                                   1].get_absolute_deadline(current_time)
 
-        deadline = max(self.jobs[job_index].a, prev_d) + \
-            job.c/self.u
-        job.set_absolute_deadline(deadline)
+            deadline = max(self.jobs[job_index].a, prev_d) + \
+                job.c/self.u
+            job.set_absolute_deadline(deadline)
         self.set_rem_budget(current_time,
                             sum([job.c_rem
                                  for job in self.jobs[:job_index+1]]))
 
     def get_self_crit_tm(self, current_time):
         return -1
+
+    def optimize(self):
+        opt_possible = False
+        for job in self.jobs:
+            f = job.exec_logs[0][np.where(job.exec_logs[1] == 1)[0][-1:]]
+            if (f.size != 0):
+                f = f[0]
+                d = job.get_absolute_deadline(job.a)
+                if (f < d):
+                    job.set_absolute_deadline(f)
+                    opt_possible = True
+        self.opt_init = True
+        return opt_possible
 
     def get_subplot_req(self):
         # Only 1 For Jobs. Budget is insignificant
@@ -81,15 +100,11 @@ class TBS(tk.Server):
                                       y_label="Server",
                                       color=clrs[i], legend=True)
             clr = "#" + hex(int(clrs[i][1:], 16) - 0x404040).upper()[2:]
-            axs[0].arrow(self.jobs[i].a, 0, 0, 1.2, width=0.04, head_width=0.3,
-                         head_length=0.5, color=clr)
+            ut.arrow(axs[0], self.jobs[i].a, clr, down=False)
             if (len(self.jobs[i].ds_abs) > 0):
                 for d in self.jobs[i].ds_abs[:-1]:
-                    axs[0].arrow(d, 1.7, 0, -1.2, width=0.04, head_width=0.3,
-                                 head_length=0.5, color=clr, ls="dashed")
-                axs[0].arrow(self.jobs[i].ds_abs[-1], 1.7, 0, -1.2,
-                             width=0.04, head_width=0.3, head_length=0.5,
-                             color=clr)
+                    ut.arrow(axs[0], d, clr, major=False)
+                ut.arrow(axs[0], self.jobs[i].ds_abs[-1], clr)
 
 
 class CBS(tk.Server):

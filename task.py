@@ -130,11 +130,9 @@ class Periodic(Generic):
                 axs[0].plot([i, i], [0, 1], color="#000000")
         else:
             for i in range(0, end_time+1, self.t):
-                axs[0].arrow(i, 0, 0, 1.2, width=0.04, head_width=0.3,
-                             head_length=0.5, color="#0000ff")
+                ut.arrow(axs[0], i, "#0000ff", down=False)
             for i in range(self.d, end_time+1, self.t):
-                axs[0].arrow(i, 1.7, 0, -1.2, width=0.04, head_width=0.3,
-                             head_length=0.5, color="#ff0000")
+                ut.arrow(axs[0], i, "#ff0000")
 
 
 class Aperiodic(Generic):
@@ -156,13 +154,14 @@ class Aperiodic(Generic):
             return -1
 
     def set_absolute_deadline(self, deadline):
-        i = 0
-        while (i < len(self.ds_abs)):
-            if (self.ds_abs[i] > deadline):
-                break
-            i += 1
-        self.ds_abs.insert(i, deadline)
-        self.ds_abs = self.ds_abs[:i+1]
+        # i = 0
+        # while (i < len(self.ds_abs)):
+        #     if (self.ds_abs[i] > deadline):
+        #         break
+        #     i += 1
+        # self.ds_abs.insert(i, deadline)
+        # self.ds_abs = self.ds_abs[:i+1]
+        self.ds_abs.append(deadline)
 
     def get_absolute_deadline(self, current_time):
         if (current_time >= self.a and len(self.ds_abs) > 0):
@@ -180,17 +179,15 @@ class Aperiodic(Generic):
 
     def subplot(self, axs, end_time=-1):
         self.plt_template(axs[0], end_time=end_time)
-        axs[0].arrow(self.a, 0, 0, 1.2, width=0.04, head_width=0.3,
-                     head_length=0.5, color="#0000ff")
+        ut.arrow(axs[0], self.a, "#0000ff", down=False)
         if (self.d > 0):
-            axs[0].arrow(self.get_absolute_deadline(self.a), 1.7, 0, -1.2,
-                         width=0.04, head_width=0.3, head_length=0.5,
-                         color="#ff0000")
+            ut.arrow(axs[0], self.get_absolute_deadline(self.a), "#ff0000")
 
 
 class Server(Generic):
     def __init__(self, q, t, index=None):
-        Generic.__init__(self, "Task " + str(index),
+        Generic.__init__(self, "Server" + ((" " + str(index)) if index is not
+                                           None else ""),
                          {"q": q, "q_rem": 0, "t": t})
         self.u = q/t
         self.q_rem = 0
@@ -272,18 +269,14 @@ class Server(Generic):
         clrs = ["#FAC549", "#82B366", "#9673A6"]
         for i in range(0, len(self.jobs)):
             job = self.jobs[i]
-            job.plt_template(axs[0], end_time=end_time, y_label="Server",
+            job.plt_template(axs[0], end_time=end_time, y_label=self.name,
                              color=clrs[i], legend=True)
             clr = "#" + hex(int(clrs[i][1:], 16) - 0x404040).upper()[2:]
-            axs[0].arrow(job.a, 0, 0, 1.2, width=0.04, head_width=0.3,
-                         head_length=0.5, color=clr)
+            ut.arrow(axs[0], job.a, clr, down=False)
             if (len(job.ds_abs) > 0):
                 for d in job.ds_abs[:-1]:
-                    axs[0].arrow(d, 1.7, 0, -1.2, width=0.04, head_width=0.3,
-                                 head_length=0.5, color=clr, ls="dashed")
-                axs[0].arrow(job.ds_abs[-1], 1.7, 0, -1.2,
-                             width=0.04, head_width=0.3, head_length=0.5,
-                             color=clr)
+                    ut.arrow(axs[0], d, clr, major=False)
+                ut.arrow(axs[0], job.ds_abs[-1], clr)
 
         self.q_logs = ut.filter_sequence(self.q_logs)
         self.plt_template(axs[1], cust_quant=self.q_logs, end_time=end_time,
