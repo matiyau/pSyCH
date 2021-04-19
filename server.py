@@ -101,6 +101,7 @@ class CBS(tk.Server):
                                1].get_absolute_deadline(current_time)
             if (current_time + self.q_rem/self.u > dl):
                 dl = current_time + self.t
+                self.set_rem_budget(current_time, self.q_rem)
                 self.set_rem_budget(current_time, self.q)
             job.set_absolute_deadline(dl)
 
@@ -109,6 +110,9 @@ class CBS(tk.Server):
             self.set_rem_budget(current_time, self.q)
             job.set_absolute_deadline(job.get_absolute_deadline(current_time)
                                       + self.t)
+        elif (job_index == len(self.jobs)-1 and job.c_rem == 0):
+            # All jobs finished
+            self.set_rem_budget(current_time, self.q_rem)
 
     def get_self_crit_tm(self, current_time):
         done = (np.array([job.c_rem for job in self.jobs

@@ -212,7 +212,7 @@ class Server(Generic):
     def get_absolute_deadline(self, current_time):
         self.modify_all_jobs(current_time)
         ds = np.array([job.get_absolute_deadline(current_time)
-                       for job in self.jobs])
+                       for job in self.jobs if job.c_rem > 0])
         ds = ds[ds > current_time]
         return ds.min() if ds.size != 0 else -1
 
@@ -263,7 +263,7 @@ class Server(Generic):
 
     def get_subplot_req(self):
         # 1 For Budget and 1 For Jobs
-        return (self.q, 1)
+        return (1, self.q)
 
     def subplot(self, axs, end_time=-1):
         clrs = ["#FAC549", "#82B366", "#9673A6"]
