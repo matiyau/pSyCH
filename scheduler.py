@@ -34,18 +34,18 @@ class Generic():
             task.reset()
         self.unit = np.gcd.reduce([task.unit for task in self.tasks])
         self.crit_tms = [0]
+        end_time_auto = 0
         while True:
             tmp = dc(self.crit_tms)
             current_time = self.crit_tms[0]
+            prev_time = current_time
             if (current_time >= self.end_time):
                 break
             self.crit_tms = self.crit_tms[1:]
             if (len(self.crit_tms) == 0):
                 self.crit_tms = [current_time]
             self.upd_prio_order(current_time)
-            # print(current_time, [job.name for job in self.prio_queue])
             for task in self.prio_queue:
-                # print((self.crit_tms[0]-current_time), self.crit_tms[0])
                 used_time, crit_tm = task.sanction(current_time,
                                                    self.crit_tms[0] -
                                                    current_time)
@@ -54,6 +54,9 @@ class Generic():
                 current_time += used_time
             if (tmp == self.crit_tms):
                 bs.insort(self.crit_tms, self.crit_tms[0] + self.unit)
+            if (prev_time != current_time):
+                end_time_auto = current_time
+        self.end_time = end_time_auto
 
     def plot(self):
         plt_reqs = [task.get_subplot_req() for task in self.tasks]
