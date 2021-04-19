@@ -6,7 +6,6 @@ Created on Thu Apr 15 23:02:01 2021
 @author: n7
 """
 
-import bisect as bs
 import numpy as np
 from matplotlib.ticker import MaxNLocator
 
@@ -46,14 +45,13 @@ class Generic():
                                                   [0, 1, 1, 0]]], axis=1)
         return used_time, self.query(current_time+used_time)
 
-    def get_subplot_count(self):
-        return 1
+    def get_subplot_req(self):
+        # Single element corresponds to one subplot.
+        # The value corresponds to the y-proportion
+        return (1,)
 
-    # ="#B3B3B3"
-    # self.exec_logs[0], self.exec_logs[1]
-    # fig, ax = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [3, 1]})
     def plt_template(self, ax, cust_quant=None, end_time=-1, y_label=None,
-                     hide_yticks=True, color="#B3B3B3"):
+                     hide_yticks=True, color="#B3B3B3", legend=False):
         if (cust_quant is None):
             quant = self.exec_logs
             quant_annots = True
@@ -79,16 +77,20 @@ class Generic():
         ax.set_ylim(0, 2*quant[1].max())
         ax.set_xlim(0, end_time)
         ax.set_xticks(np.arange(0, end_time, 1))
-        ax.grid(which="both")
 
-        ax.fill_between(quant[0], quant[1], 0, color=color)
+        ax.fill_between(quant[0], quant[1], 0, color=color, label=self.name)
         if (quant_annots):
             brk_pts = quant[0][:-1][quant[1][:-1] !=
                                     quant[1][1:]].reshape(-1, 2)
             for pts in brk_pts:
                 ax.text(pts.mean(), 0.5, str(int(pts[1] - pts[0])),
                         ha="center", va="center", size=14, weight="bold")
+        ax.grid(True, which="both")
+        if (legend):
+            ax.legend(ncol=5)
 
+    def subplot(self, axs, end_time=-1):
+        self.plt_template(axs[0], end_time=end_time)
 
 
 class Periodic(Generic):
@@ -208,6 +210,7 @@ class Server(Generic):
             if (self.jobs[i].a > job.a):
                 break
             i += 1
+        job.name.replace("Task", "Job")
         self.jobs.insert(i, job)
 
     def modify_job(self, current_time, job_index):
@@ -235,6 +238,6 @@ class Server(Generic):
         self.q_logs = np.concatenate([self.q_logs,
                                       [[current_time], [self.q_rem]]], axis=1)
 
-    def get_subplot_count(self):
+    def get_subplot_req(self):
         # 1 For Budget and 1 For Jobs
-        return 2
+        return (self.q, 1)

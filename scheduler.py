@@ -9,7 +9,9 @@ Created on Sat Apr 17 08:08:44 2021
 from . import task as tk
 import bisect as bs
 from copy import deepcopy as dc
+from matplotlib import pyplot as plt
 import numpy as np
+import svgling as sl
 
 
 class Generic():
@@ -38,7 +40,6 @@ class Generic():
             if (len(self.crit_tms) == 0):
                 self.crit_tms = [current_time]
             self.upd_prio_order(current_time)
-            qu = self.prio_queue
             for task in self.prio_queue:
                 used_time, crit_tm = task.sanction(current_time,
                                                    self.crit_tms[0] -
@@ -46,6 +47,22 @@ class Generic():
                 if (crit_tm >= 0) and (crit_tm not in self.crit_tms):
                     bs.insort(self.crit_tms, crit_tm)
                 current_time += used_time
+
+    def plot(self):
+        plt_reqs = [task.get_subplot_req() for task in self.tasks]
+
+        plt_counts = [len(i) for i in plt_reqs]
+        plt_ratios = []
+        for plt_req in plt_reqs:
+            for ratio in plt_req:
+                plt_ratios.append(ratio)
+        fig, ax = plt.subplots(sum(plt_counts), 1, sharex=True,
+                               gridspec_kw={'height_ratios': plt_ratios})
+        j=0
+        for i in range(0, len(self.tasks)):
+            self.tasks[i].subplot([ax[k] for k in range(j, j+plt_counts[i])],
+                                  end_time=self.end_time)
+            j += plt_counts[i]
 
 
 class FCFS(Generic):
@@ -113,7 +130,17 @@ class Bratley(Generic):
             else:
                 subtree += subsubtree
             tree.append(subtree)
+
         return tree
+
+    def create(self, pruning=True):
+        tree = ["(0, )"]
+        tree += self.get_tree(0, self.tasks, pruning)
+        self.tree = tree
+        return tree
+
+    def plot(self):
+        sl.draw_tree(self.tree)
 
 
 class Spring(Generic):
@@ -159,12 +186,14 @@ class Spring(Generic):
         tree[i] += subsubtree
         return tree
 
-
-    def create(self, pruning=True):
+    def create(self):
         tree = ["(, )"]
         tree += self.get_tree(0, self.tasks)
-        # sl.draw_tree(tree, pruning)
+        self.tree = tree
         return tree
+
+    def plot(self):
+        sl.draw_tree(self.tree)
 
 
 class RM(Generic):

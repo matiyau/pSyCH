@@ -70,6 +70,10 @@ class TBS(tk.Server):
     def get_self_crit_tm(self, current_time):
         return -1
 
+    def get_subplot_req(self):
+        # Only 1 For Jobs. Budget is insignificant
+        return (1,)
+
 
 class CBS(tk.Server):
     def modify_job(self, current_time, job_index):
