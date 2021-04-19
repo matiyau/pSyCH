@@ -17,7 +17,11 @@ class PS(tk.Server):
             self.log_rem_budget(current_time)
             self.set_rem_budget(current_time, self.q)
         if (len(self.get_pending_jobs(current_time)) == 0):
-            self.set_rem_budget(current_time, 0)
+            if (current_time % self.t == 0):
+                self.set_rem_budget(current_time + 0.2, self.q)
+                self.set_rem_budget(current_time + 0.2, 0)
+            else:
+                self.set_rem_budget(current_time, 0)
 
     def get_self_crit_tm(self, current_time):
         # If budget is non-zero, set critical time to current time so that
