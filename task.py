@@ -57,15 +57,13 @@ class Generic():
             quant_annots = True
         else:
             quant = cust_quant
+            quant_annots = False
 
         if (end_time == -1):
             end_time = quant[0].max()
 
         if (y_label is None):
             y_label = self.name
-            quant_annots = True
-        else:
-            quant_annots = False
 
         ax.margins(x=0, y=0)
         ax.spines["top"].set_visible(False)
@@ -75,25 +73,23 @@ class Generic():
             ax.get_yaxis().set_ticks([])
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         ax.set_xlim(0, end_time)
-        ax.set_xticks(np.arange(0, end_time, 1))
+        ax.set_xticks(np.arange(0, end_time, 1), minor=True)
+        ax.set_xticks(np.arange(0, end_time, 2))
         ax.grid(True, which="both")
 
         if (quant.size == 0):
             return
-
         ax.set_ylim(0, 2*quant[1].max())
         ax.fill_between(quant[0], quant[1], 0, color=color, label=self.name)
         if (quant_annots):
             brk_pts = quant[0][:-1][quant[1][:-1] !=
                                     quant[1][1:]].reshape(-1, 2)
             for pts in brk_pts:
-                ax.text(pts.mean(), 0.5, str(int(pts[1] - pts[0])),
-                        ha="center", va="center", size=14, weight="bold")
+                if (pts.mean() < end_time):
+                    ax.text(pts.mean(), 0.5, str(int(pts[1] - pts[0])),
+                            ha="center", va="center", size=14, weight="bold")
         if (legend):
             ax.legend(ncol=5)
-
-    def subplot(self, axs, end_time=-1):
-        self.plt_template(axs[0], end_time=end_time)
 
 
 class Periodic(Generic):
@@ -121,6 +117,21 @@ class Periodic(Generic):
         used_time = min(self.pending_time, available_time)
         self.pending_time -= used_time
         return used_time
+
+    def subplot(self, axs, end_time=-1):
+        self.plt_template(axs[0], end_time=end_time)
+        if (end_time==-1):
+            end_time = self.exec_logs[0].max()
+        if (self.d == self.t):
+            for i in range(0, end_time+1, self.t):
+                axs[0].plot([i, i], [0, 1], color="#000000")
+        else:
+            for i in range(0, end_time+1, self.t):
+                axs[0].arrow(i, 0, 0, 1.2, width=0.04, head_width=0.3,
+                             head_length=0.5, color="#0000ff")
+            for i in range(self.d, end_time+1, self.t):
+                axs[0].arrow(i, 1.7, 0, -1.2, width=0.04, head_width=0.3,
+                             head_length=0.5, color="#ff0000")
 
 
 class Aperiodic(Generic):
@@ -163,6 +174,15 @@ class Aperiodic(Generic):
             return used_time
         else:
             return 0
+
+    def subplot(self, axs, end_time=-1):
+        self.plt_template(axs[0], end_time=end_time)
+        axs[0].arrow(self.a, 0, 0, 1.2, width=0.04, head_width=0.3,
+                     head_length=0.5, color="#0000ff")
+        if (self.d > 0):
+            axs[0].arrow(self.get_absolute_deadline(self.a), 1.7, 0, -1.2,
+                         width=0.04, head_width=0.3, head_length=0.5,
+                         color="#ff0000")
 
 
 class Server(Generic):
@@ -213,7 +233,7 @@ class Server(Generic):
             if (self.jobs[i].a > job.a):
                 break
             i += 1
-        job.name.replace("Task", "Job")
+        job.name = job.name.replace("Task", "Job")
         self.jobs.insert(i, job)
 
     def modify_job(self, current_time, job_index):
@@ -244,3 +264,19 @@ class Server(Generic):
     def get_subplot_req(self):
         # 1 For Budget and 1 For Jobs
         return (self.q, 1)
+
+    def subplot(self, axs, end_time=-1):
+        clrs = ["#FAC549", "#82B366", "#9673A6"]
+        for i in range(0, len(self.jobs)):
+            job = self.jobs[i]
+            job.plt_template(axs[0], end_time=end_time, y_label="Server",
+                             color=clrs[i], legend=True)
+            clr = "#" + hex(int(clrs[i][1:], 16) - 0x404040).upper()[2:]
+            axs[0].arrow(job.a, 0, 0, 1.2, width=0.04, head_width=0.3,
+                         head_length=0.5, color=clr)
+            if (self.jobs[i].d > 0):
+                axs[0].arrow(job.get_absolute_deadline(job.a), 1.7, 0, -1.2,
+                             width=0.04, head_width=0.3, head_length=0.5,
+                             color=clr)
+        self.plt_template(axs[1], cust_quant=self.q_logs, end_time=end_time,
+                          y_label="Budget", hide_yticks=False, color="#FF8000")

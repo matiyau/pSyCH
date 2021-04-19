@@ -35,12 +35,11 @@ class Generic():
         self.unit = np.gcd.reduce([task.unit for task in self.tasks])
         self.crit_tms = [0]
         end_time_auto = 0
+        done = False
         while True:
             tmp = dc(self.crit_tms)
             current_time = self.crit_tms[0]
             prev_time = current_time
-            if (current_time >= self.end_time):
-                break
             self.crit_tms = self.crit_tms[1:]
             if (len(self.crit_tms) == 0):
                 self.crit_tms = [current_time]
@@ -52,10 +51,21 @@ class Generic():
                 if (crit_tm >= 0) and (crit_tm not in self.crit_tms):
                     bs.insort(self.crit_tms, crit_tm)
                 current_time += used_time
+                if (current_time >= self.end_time):
+                    done = True
+                    break
             if (tmp == self.crit_tms):
                 bs.insort(self.crit_tms, self.crit_tms[0] + self.unit)
             if (prev_time != current_time):
                 end_time_auto = current_time
+            if done:
+                self.upd_prio_order(current_time)
+                for task in self.tasks:
+                    if (isinstance(task, tk.Aperiodic)):
+                        end_time_auto = max(end_time_auto,
+                                            task.get_absolute_deadline(
+                                                current_time))
+                break
         self.end_time = end_time_auto
 
     def plot(self):
@@ -75,6 +85,11 @@ class Generic():
             self.tasks[i].subplot([ax[k] for k in range(j, j+plt_counts[i])],
                                   end_time=self.end_time)
             j += plt_counts[i]
+
+        fig.set_size_inches(ax[0].get_xlim()[1]/4,sum(plt_counts))
+        fig.tight_layout()
+        # fig.savefig("temp.svg")
+        return fig
 
 
 class FCFS(Generic):

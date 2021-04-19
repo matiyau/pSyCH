@@ -30,8 +30,8 @@ class PS(tk.Server):
 
 class DS(tk.Server):
     def update_budget(self, current_time):
+        self.log_rem_budget(current_time)
         if (current_time % self.t == 0):
-            self.log_rem_budget(current_time)
             self.set_rem_budget(current_time, self.q)
 
     def get_self_crit_tm(self, current_time):
@@ -73,6 +73,13 @@ class TBS(tk.Server):
     def get_subplot_req(self):
         # Only 1 For Jobs. Budget is insignificant
         return (1,)
+
+    def subplot(self, axs, end_time=-1):
+        clrs = ["#FAC549", "#82B366", "#9673A6"]
+        for i in range(0, len(self.jobs)):
+            self.jobs[i].plt_template(axs[0], end_time=end_time,
+                                      y_label="Server",
+                                      color=clrs[i], legend=True)
 
 
 class CBS(tk.Server):
