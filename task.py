@@ -8,6 +8,7 @@ Created on Thu Apr 15 23:02:01 2021
 
 import bisect as bs
 import numpy as np
+from matplotlib.ticker import MaxNLocator
 
 
 class Generic():
@@ -44,6 +45,50 @@ class Generic():
                                                    current_time + used_time],
                                                   [0, 1, 1, 0]]], axis=1)
         return used_time, self.query(current_time+used_time)
+
+    def get_subplot_count(self):
+        return 1
+
+    # ="#B3B3B3"
+    # self.exec_logs[0], self.exec_logs[1]
+    # fig, ax = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [3, 1]})
+    def plt_template(self, ax, cust_quant=None, end_time=-1, y_label=None,
+                     hide_yticks=True, color="#B3B3B3"):
+        if (cust_quant is None):
+            quant = self.exec_logs
+            quant_annots = True
+        else:
+            quant = cust_quant
+
+        if (end_time == -1):
+            end_time = quant[0].max()
+
+        if (y_label is None):
+            y_label = self.name
+            quant_annots = True
+        else:
+            quant_annots = False
+
+        ax.margins(x=0, y=0)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.set_ylabel(y_label, fontsize=14)
+        if (hide_yticks):
+            ax.get_yaxis().set_ticks([])
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        ax.set_ylim(0, 2*quant[1].max())
+        ax.set_xlim(0, end_time)
+        ax.set_xticks(np.arange(0, end_time, 1))
+        ax.grid(which="both")
+
+        ax.fill_between(quant[0], quant[1], 0, color=color)
+        if (quant_annots):
+            brk_pts = quant[0][:-1][quant[1][:-1] !=
+                                    quant[1][1:]].reshape(-1, 2)
+            for pts in brk_pts:
+                ax.text(pts.mean(), 0.5, str(int(pts[1] - pts[0])),
+                        ha="center", va="center", size=14, weight="bold")
+
 
 
 class Periodic(Generic):
@@ -189,3 +234,7 @@ class Server(Generic):
     def log_rem_budget(self, current_time):
         self.q_logs = np.concatenate([self.q_logs,
                                       [[current_time], [self.q_rem]]], axis=1)
+
+    def get_subplot_count(self):
+        # 1 For Budget and 1 For Jobs
+        return 2
