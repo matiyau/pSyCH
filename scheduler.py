@@ -125,6 +125,7 @@ class EDF(Generic):
 
         # Push negative deadlines to the end
         unq = np.concatenate([unq[unq >= 0], unq[unq < 0]])
+        print((current_time, unq))
         self.prio_queue = []
         for d in unq:
             srvs = [task for task in self.tasks if

@@ -108,7 +108,7 @@ class Periodic(Generic):
         return (current_time//self.t + 1) * self.t
 
     def get_absolute_deadline(self, current_time):
-        return current_time//self.t + self.d
+        return (current_time//self.t)*self.t + self.d
 
     def run(self, current_time, available_time):
         self.pending_time += (current_time//self.t -
@@ -274,8 +274,11 @@ class Server(Generic):
             clr = "#" + hex(int(clrs[i][1:], 16) - 0x404040).upper()[2:]
             axs[0].arrow(job.a, 0, 0, 1.2, width=0.04, head_width=0.3,
                          head_length=0.5, color=clr)
-            if (self.jobs[i].d > 0):
-                axs[0].arrow(job.get_absolute_deadline(job.a), 1.7, 0, -1.2,
+            if (len(job.ds_abs) > 0):
+                for d in job.ds_abs[:-1]:
+                    axs[0].arrow(d, 1.7, 0, -1.2, width=0.04, head_width=0.3,
+                                 head_length=0.5, color=clr, ls="dashed")
+                axs[0].arrow(job.ds_abs[-1], 1.7, 0, -1.2,
                              width=0.04, head_width=0.3, head_length=0.5,
                              color=clr)
         self.plt_template(axs[1], cust_quant=self.q_logs, end_time=end_time,
