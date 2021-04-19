@@ -91,6 +91,7 @@ class Generic():
                     ax.text(pts.mean(), 0.5, str(int(pts[1] - pts[0])),
                             ha="center", va="center", size=14, weight="bold")
         if (legend):
+            ax.set_ylim(0, 3*quant[1].max())
             ax.legend(ncol=5)
 
 
@@ -265,7 +266,7 @@ class Server(Generic):
 
     def get_subplot_req(self):
         # 1 For Budget and 1 For Jobs
-        return (1, self.q)
+        return (1.5, self.q)
 
     def subplot(self, axs, end_time=-1):
         clrs = ["#FAC549", "#82B366", "#9673A6"]

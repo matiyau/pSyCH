@@ -72,7 +72,7 @@ class TBS(tk.Server):
 
     def get_subplot_req(self):
         # Only 1 For Jobs. Budget is insignificant
-        return (1,)
+        return (1.5,)
 
     def subplot(self, axs, end_time=-1):
         clrs = ["#FAC549", "#82B366", "#9673A6"]
@@ -80,6 +80,16 @@ class TBS(tk.Server):
             self.jobs[i].plt_template(axs[0], end_time=end_time,
                                       y_label="Server",
                                       color=clrs[i], legend=True)
+            clr = "#" + hex(int(clrs[i][1:], 16) - 0x404040).upper()[2:]
+            axs[0].arrow(self.jobs[i].a, 0, 0, 1.2, width=0.04, head_width=0.3,
+                         head_length=0.5, color=clr)
+            if (len(self.jobs[i].ds_abs) > 0):
+                for d in self.jobs[i].ds_abs[:-1]:
+                    axs[0].arrow(d, 1.7, 0, -1.2, width=0.04, head_width=0.3,
+                                 head_length=0.5, color=clr, ls="dashed")
+                axs[0].arrow(self.jobs[i].ds_abs[-1], 1.7, 0, -1.2,
+                             width=0.04, head_width=0.3, head_length=0.5,
+                             color=clr)
 
 
 class CBS(tk.Server):
