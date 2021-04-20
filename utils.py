@@ -26,3 +26,18 @@ def arrow(ax, x, clr, down=True, major=True):
     width = 0.08 + 0.04*mj
     ax.arrow(x, y, 0, dy, width=width, head_width=0.45, head_length=0.4,
              color=clr, ls=styles[mj], alpha=alphas[mj])
+
+
+def get_d_max(tasks):
+    return max([task.d for task in tasks])
+
+
+def get_hyperperiod(tasks):
+    return np.lcm.reduce([task.t for task in tasks])
+
+
+def get_ds(tasks, lim):
+    ds = []
+    for task in tasks:
+        ds += [d for d in range(task.d, lim+1, task.t)]
+    return np.unique(ds)

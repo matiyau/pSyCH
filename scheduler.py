@@ -227,6 +227,54 @@ class Spring(Generic):
         sl.draw_tree(self.tree)
 
 
+class EDFStar(Generic):
+    def set_constraints(self, edges):
+        self.edges = edges
+
+    def modify_releases(self, rel_simplification=False):
+        k = int(not rel_simplification)
+        tasks = {int(task.name.split(" ")[1]): task for task in self.tasks}
+        task_ids = [i for i in tasks]
+        task_pred = {}
+        for task_id in task_ids:
+            task_pred[task_id] = [i for i,j in self.edges if j==task_id]
+        while (len(task_ids) != 0):
+            for task_id in task_ids:
+                task = tasks[task_id]
+                pending = [i for i in task_pred[task_id] if i in task_ids]
+                if (len(pending) == 0):
+                    task.a = max([task.a] + [(tasks[i].a + k*tasks[i].c)
+                                             for i in task_pred[task_id]])
+                    task_ids.remove(task_id)
+
+    def modify_deadlines(self):
+        tasks = {int(task.name.split(" ")[1]): task for task in self.tasks}
+        task_ids = [i for i in tasks]
+        task_succ = {}
+        for task_id in task_ids:
+            task_succ[task_id] = [j for i, j in self.edges if i==task_id]
+        while (len(task_ids) != 0):
+            for task_id in task_ids:
+                task = tasks[task_id]
+                pending = [i for i in task_succ[task_id] if i in task_ids]
+                if (len(pending) == 0):
+                    D = min([task.get_absolute_deadline(task.a)] +
+                            [(tasks[i].get_absolute_deadline(tasks[i].a) -
+                              tasks[i].c) for i in task_succ[task_id]])
+                    task.set_absolute_deadline(D)
+                    task_ids.remove(task_id)
+
+    def modify_tasks(self, rel_simplification=False):
+        self.modify_releases(rel_simplification)
+        self.modify_deadlines()
+
+
+    def create(self, end_time, rel_simplification=False):
+        self.modify_tasks(rel_simplification)
+        Generic.create(self, end_time)
+        pass
+
+
 class RM(Generic):
     def upd_prio_order(self, current_time):
         if (len(self.prio_queue) == 0):
