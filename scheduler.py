@@ -227,6 +227,31 @@ class Spring(Generic):
         sl.draw_tree(self.tree)
 
 
+class LDF(Generic):
+    def set_constraints(self, edges):
+        self.edges = edges
+
+    def upd_prio_order(self, current_time):
+        if (len(self.prio_queue) == 0):
+            tasks = {int(task.name.split(" ")[1]): task for task in self.tasks}
+            task_ids = [i for i in tasks]
+            task_succ = {}
+            for task_id in task_ids:
+                task_succ[task_id] = [j for i, j in self.edges if i==task_id]
+            while (len(task_ids) != 0):
+                ready = []
+                for task_id in task_ids:
+                    task = tasks[task_id]
+                    pending = [i for i in task_succ[task_id] if i in task_ids]
+                    if (len(pending) == 0):
+                        ready.append(task_id)
+                j = ready[np.argmax([tasks[i].get_absolute_deadline(tasks[i].a)
+                                     for i in ready])]
+                self.prio_queue = [tasks[j]] + self.prio_queue
+                task_ids.remove(j)
+
+
+
 class EDFStar(Generic):
     def set_constraints(self, edges):
         self.edges = edges
@@ -246,6 +271,7 @@ class EDFStar(Generic):
                     task.a = max([task.a] + [(tasks[i].a + k*tasks[i].c)
                                              for i in task_pred[task_id]])
                     task_ids.remove(task_id)
+                    break
 
     def modify_deadlines(self):
         tasks = {int(task.name.split(" ")[1]): task for task in self.tasks}
@@ -263,6 +289,7 @@ class EDFStar(Generic):
                               tasks[i].c) for i in task_succ[task_id]])
                     task.set_absolute_deadline(D)
                     task_ids.remove(task_id)
+                    break
 
     def modify_tasks(self, rel_simplification=False):
         self.modify_releases(rel_simplification)
