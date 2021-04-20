@@ -17,7 +17,7 @@ def rm_prdc_sched(tasks):
         sched = -1 # Definitely not schedulable
     else:
         HB = ut.get_P(tasks)
-        params["HB"] = P
+        params["HB"] = HB
         params["LL"] = U
         if (HB <= 2):
             sched = 1 # Definitely schedulable
