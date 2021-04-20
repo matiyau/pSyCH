@@ -6,6 +6,7 @@ Created on Mon Apr 19 19:56:36 2021
 @author: n7
 """
 
+import math
 import numpy as np
 
 
@@ -35,9 +36,33 @@ def get_d_max(tasks):
 def get_hyperperiod(tasks):
     return np.lcm.reduce([task.t for task in tasks])
 
+def get_L_star(tasks):
+    L = 0
+    U = 0
+    for task in tasks:
+        u = task.c/task.t
+        L += (task.t - task.d)*u
+        U += u
+    L /= (1-U)
+    return L
+
+
+def get_total_u(tasks):
+    U = 0
+    for task in tasks:
+        U += (task.c/task.t)
+    return U
+
 
 def get_ds(tasks, lim):
     ds = []
     for task in tasks:
-        ds += [d for d in range(task.d, lim+1, task.t)]
+        ds += list(np.arange(task.d, lim+1, task.t))
     return np.unique(ds)
+
+
+def get_g_val(tasks, L):
+    g_val = 0
+    for task in tasks:
+        g_val += (math.floor((L + task.t - task.d)/task.t)*task.c)
+    return g_val
