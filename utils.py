@@ -6,9 +6,18 @@ Created on Mon Apr 19 19:56:36 2021
 @author: n7
 """
 
+from fractions import Fraction
 import math
 import numpy as np
 
+
+def flt_gcd(flts):
+    max_ds = [10**len(str(float(flt)).split(".")[1]) for flt in flts]
+    fracs = [Fraction(flts[i]).limit_denominator(max_ds[i])
+             for i in range(0, len(flts))]
+    n_gcd = np.gcd.reduce([frac.numerator for frac in fracs])
+    d_lcm = np.lcm.reduce([frac.denominator for frac in fracs])
+    return n_gcd/d_lcm
 
 def filter_sequence(seq):
     brk_pts = np.where(seq[1][:-1] != seq[1][1:])[0]
@@ -44,14 +53,14 @@ def get_L_star(tasks):
         L += (task.t - task.d)*u
         U += u
     L /= (1-U)
-    return L
+    return round(L, 3)
 
 
 def get_total_u(tasks):
     U = 0
     for task in tasks:
         U += (task.c/task.t)
-    return U
+    return round(U, 3)
 
 
 def get_ds(tasks, lim):
@@ -66,3 +75,10 @@ def get_g_val(tasks, L):
     for task in tasks:
         g_val += (math.floor((L + task.t - task.d)/task.t)*task.c)
     return g_val
+
+
+def get_P(tasks):
+    P = 1
+    for task in tasks:
+        P *= (1 + task.c/task.t)
+    return round(P, 3)

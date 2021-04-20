@@ -14,7 +14,7 @@ from . import utils as ut
 class Generic():
     def __init__(self, name, tm_params):
         self.name = name
-        self.unit = np.gcd.reduce([pair[1] for pair in tm_params.items()])
+        self.unit = ut.flt_gcd([pair[1] for pair in tm_params.items()])
         for key in tm_params:
             setattr(self, key, tm_params[key])
         self.exec_logs = np.array([[], []])
@@ -188,7 +188,7 @@ class Server(Generic):
     def __init__(self, q, t, index=None):
         Generic.__init__(self, "Server" + ((" " + str(index)) if index is not
                                            None else ""),
-                         {"q": q, "q_rem": 0, "t": t})
+                         {"q": q, "q_rem": 0, "c": q, "t": t})
         self.u = q/t
         self.q_rem = 0
         self.q_logs = np.array([[], []])

@@ -7,6 +7,7 @@ Created on Sat Apr 17 08:08:44 2021
 """
 
 from . import task as tk
+from . import utils as ut
 import bisect as bs
 from copy import deepcopy as dc
 from matplotlib import pyplot as plt
@@ -32,7 +33,7 @@ class Generic():
         self.end_time = end_time
         for task in self.tasks:
             task.reset()
-        self.unit = np.gcd.reduce([task.unit for task in self.tasks])
+        self.unit = ut.flt_gcd([task.unit for task in self.tasks])
         self.crit_tms = [0]
         end_time_auto = 0
         done = False

@@ -16,10 +16,8 @@ def rm_prdc_sched(tasks):
     if (U > 1):
         sched = -1 # Definitely not schedulable
     else:
-        HB = 1
-        for task in tasks:
-            HB *= (task.c/task.t)
-        params["HB"] = HB
+        HB = ut.get_P(tasks)
+        params["HB"] = P
         params["LL"] = U
         if (HB <= 2):
             sched = 1 # Definitely schedulable
@@ -85,3 +83,31 @@ def edf_prdc_sched(tasks):
                 break
         params["g"] = g_vals
     return eq, sched, params
+
+
+def ps_dim(tasks):
+    params = {}
+    P = ut.get_P(tasks)
+    params["P"] = P
+    U_max = round((2 - P)/P, 3)
+    if (U_max < 0):
+        return False, params
+    T = min([task.t for task in tasks])
+    C = round(U_max * T, 3)
+    params["T"] = T
+    params["C"] = C
+    return True, params
+
+
+def ds_dim(tasks):
+    params = {}
+    P = ut.get_P(tasks)
+    params["P"] = P
+    U_max = round((2 - P)/(2*P - 1), 3)
+    if (U_max < 0):
+        return False, params
+    T = min([task.t for task in tasks])
+    C = U_max * T
+    params["T"] = T
+    params["C"] = C
+    return True, params
