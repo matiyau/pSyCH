@@ -323,11 +323,11 @@ class RM(Generic):
 class DM(Generic):
     def upd_prio_order(self, current_time):
         if (len(self.prio_queue) == 0):
-            unq = np.unique([task.t for task in self.tasks])
-            for t in unq:
+            unq = np.unique([task.d for task in self.tasks])
+            for d in unq:
                 srvs = [task for task in self.tasks if
-                        ((task.t == t) and isinstance(task, tk.Server))]
+                        ((task.d == d) and isinstance(task, tk.Server))]
                 prdc = [task for task in self.tasks if
-                        ((task.t == t) and isinstance(task, tk.Periodic))]
+                        ((task.d == d) and isinstance(task, tk.Periodic))]
                 self.prio_queue += srvs
                 self.prio_queue += prdc
