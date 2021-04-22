@@ -96,26 +96,27 @@ class Generic():
 
 
 class Periodic(Generic):
-    def __init__(self, index, c, t, d=None):
+    def __init__(self, index, c, t, d=None, phase=0):
         Generic.__init__(self, "Task " + str(index),
-                         {"c": c, "t": t, "d": t if d is None else d})
-        self.prev_run_time = -1
+                         {"c": c, "t": t, "d": t if d is None else d,
+                          "p": phase})
+        self.prev_run_time = self.p - 1
         self.pending_time = 0
 
     def reset(self):
         Generic.reset(self)
-        self.prev_run_time = -1
+        self.prev_run_time = self.p - 1
         self.pending_time = 0
 
     def query(self, current_time):
-        return (current_time//self.t + 1) * self.t
+        return ((current_time - self.p)//self.t + 1) * self.t + self.p
 
     def get_absolute_deadline(self, current_time):
-        return (current_time//self.t)*self.t + self.d
+        return ((current_time - self.p)//self.t)*self.t + self.d + self.p
 
     def run(self, current_time, available_time):
-        self.pending_time += (current_time//self.t -
-                              self.prev_run_time//self.t) * self.c
+        self.pending_time += ((current_time - self.p)//self.t -
+                              (self.prev_run_time - self.p)//self.t) * self.c
         self.prev_run_time = current_time
         used_time = min(self.pending_time, available_time)
         self.pending_time -= used_time
@@ -123,15 +124,15 @@ class Periodic(Generic):
 
     def subplot(self, axs, end_time=-1):
         self.plt_template(axs[0], end_time=end_time)
-        if (end_time==-1):
+        if (end_time == -1):
             end_time = self.exec_logs[0].max()
         if (self.d == self.t):
-            for i in range(0, end_time+1, self.t):
+            for i in range(self.p, end_time+1, self.t):
                 axs[0].plot([i, i], [0, 1.5], color="#000000")
         else:
-            for i in range(0, end_time+1, self.t):
+            for i in range(self.p, end_time+1, self.t):
                 ut.arrow(axs[0], i, "#0000ff", down=False)
-            for i in range(self.d, end_time+1, self.t):
+            for i in range(self.p + self.d, end_time+1, self.t):
                 ut.arrow(axs[0], i, "#ff0000")
 
 
