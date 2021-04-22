@@ -10,6 +10,7 @@ from . import task as tk
 from . import utils as ut
 import bisect as bs
 from copy import deepcopy as dc
+import math
 from matplotlib import pyplot as plt
 import numpy as np
 import svgling as sl
@@ -147,7 +148,7 @@ class Bratley(Generic):
         tree = []
         for i in range(0, len(tasks)):
             task = tasks[i]
-            index = task.name.split(" ")[1]
+            index = task.get_id(str)
             elp_time_new = max(elapsed_time, task.a) + task.c
             if (pruning is True and
                     (elp_time_new > task.get_absolute_deadline(elp_time_new))):
@@ -200,7 +201,7 @@ class Spring(Generic):
         H_vals = []
         elp_times_new = []
         for task in tasks:
-            index = task.name.split(" ")[1]
+            index = task.get_id(str)
             elp_time_new = max(elapsed_time, task.a) + task.c
             H_val = self.H(elp_time_new, task)
             H_vals.append(H_val)
@@ -234,7 +235,7 @@ class LDF(Generic):
 
     def upd_prio_order(self, current_time):
         if (len(self.prio_queue) == 0):
-            tasks = {int(task.name.split(" ")[1]): task for task in self.tasks}
+            tasks = {task.get_id(): task for task in self.tasks}
             task_ids = [i for i in tasks]
             task_succ = {}
             for task_id in task_ids:
@@ -259,7 +260,7 @@ class EDFStar(Generic):
 
     def modify_releases(self, rel_simplification=False):
         k = int(not rel_simplification)
-        tasks = {int(task.name.split(" ")[1]): task for task in self.tasks}
+        tasks = {task.get_id(): task for task in self.tasks}
         task_ids = [i for i in tasks]
         task_pred = {}
         for task_id in task_ids:
@@ -275,7 +276,7 @@ class EDFStar(Generic):
                     break
 
     def modify_deadlines(self):
-        tasks = {int(task.name.split(" ")[1]): task for task in self.tasks}
+        tasks = {task.get_id(): task for task in self.tasks}
         task_ids = [i for i in tasks]
         task_succ = {}
         for task_id in task_ids:
@@ -303,17 +304,72 @@ class EDFStar(Generic):
         pass
 
 
-class RM(Generic):
+class Monotonic(Generic):
+    def __init__(self, mntc_param):
+        Generic.__init__(self)
+        self.mntc_param = mntc_param
+
     def upd_prio_order(self, current_time):
+        param = self.mntc_param
         if (len(self.prio_queue) == 0):
-            unq = np.unique([task.t for task in self.tasks])
-            for t in unq:
+            unq = np.unique([getattr(task, param) for task in self.tasks])
+            for x in unq:
                 srvs = [task for task in self.tasks if
-                        ((task.t == t) and isinstance(task, tk.Server))]
+                        ((getattr(task, param) == x) and
+                         isinstance(task, tk.Server))]
                 prdc = [task for task in self.tasks if
-                        ((task.t == t) and isinstance(task, tk.Periodic))]
+                        ((getattr(task, param) == x) and
+                         isinstance(task, tk.Periodic))]
                 self.prio_queue += srvs
                 self.prio_queue += prdc
+
+    def get_wcrts(self):
+        self.upd_prio_order(-1)
+        wcrts = {task.get_id(): [task.c] for task in self.prio_queue}
+        for i in range(0, len(self.prio_queue)):
+            task = self.prio_queue[i]
+            Rs = wcrts[task.get_id()]
+            while True:
+                R = task.c + sum([math.ceil((Rs[-1] + tsk.aj)/tsk.t)*tsk.c
+                                  for tsk in self.prio_queue[:i]])
+                Rs.append(R)
+                if (Rs[-1] == Rs[-2]):
+                    break
+        return wcrts
+
+    def get_bcrts(self, ret_wcrt=False):
+        wcrts = self.get_wcrts()
+        bcrts = {i: [wcrts[i][-1]] for i in wcrts}
+        for i in range(0, len(self.prio_queue)):
+            task = self.prio_queue[i]
+            Rs = bcrts[task.get_id()]
+            while True:
+                R = task.c + sum([(math.ceil((Rs[-1]-tsk.aj)/tsk.t) - 1)*tsk.c
+                                  for tsk in self.prio_queue[:i]])
+                Rs.append(R)
+                if (Rs[-1] == Rs[-2]):
+                    break
+        if ret_wcrt:
+            return {"bc": bcrts, "wc": wcrts}
+        else:
+            return bcrts
+
+    def get_jitter(self):
+        rt = self.get_bcrts(True)
+        jit = {"FJ": {}, "RJ": {}}
+        for task in self.tasks:
+            i = task.get_id()
+            jit["RJ"][i] = rt["wc"][i][-1] - rt["bc"][i][-1]
+            jit["FJ"][i] = jit["RJ"][i] + task.aj
+        return {"jit": jit, "rt": rt}
+
+
+class RM(Monotonic):
+    def __init__(self):
+        Monotonic.__init__(self, "t")
+
+    def upd_prio_order(self, current_time):
+        Monotonic.upd_prio_order(self, current_time)
 
         for task in self.tasks:
             if (isinstance(task, tk.Server)):
@@ -321,13 +377,5 @@ class RM(Generic):
 
 
 class DM(Generic):
-    def upd_prio_order(self, current_time):
-        if (len(self.prio_queue) == 0):
-            unq = np.unique([task.d for task in self.tasks])
-            for d in unq:
-                srvs = [task for task in self.tasks if
-                        ((task.d == d) and isinstance(task, tk.Server))]
-                prdc = [task for task in self.tasks if
-                        ((task.d == d) and isinstance(task, tk.Periodic))]
-                self.prio_queue += srvs
-                self.prio_queue += prdc
+    def __init__(self):
+        Monotonic.__init__(self, "d")

@@ -19,6 +19,9 @@ class Generic():
             setattr(self, key, tm_params[key])
         self.exec_logs = np.array([[], []])
 
+    def get_id(self, typ=int):
+        return typ(self.name.split(" ")[1])
+
     def reset(self):
         self.exec_logs = np.array([[], []])
 
@@ -96,10 +99,11 @@ class Generic():
 
 
 class Periodic(Generic):
-    def __init__(self, index, c, t, d=None, phase=0):
+    def __init__(self, index, c, t, d=None, phase=0, aj=0):
         Generic.__init__(self, "Task " + str(index),
                          {"c": c, "t": t, "d": t if d is None else d,
                           "p": phase})
+        self.aj = aj
         self.prev_run_time = self.p - 1
         self.pending_time = 0
 

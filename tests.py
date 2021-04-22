@@ -31,7 +31,7 @@ def dm_prdc_sched(tasks):
     params = {}
     params["R"] = {}
     for task in tasks:
-        index = task.name.split(" ")[1]
+        index = task.get_id()
         Rs = [task.c]
         while True:
             i = 0
@@ -50,7 +50,7 @@ def dm_prdc_sched(tasks):
 
 
 def edf_prdc_sched(tasks):
-    eq = True # D=T condition
+    eq = True  # D=T condition
     sched = False
     params = {}
     for task in tasks:
