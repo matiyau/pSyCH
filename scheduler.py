@@ -25,6 +25,23 @@ class Generic():
         self.unit = 1
 
     def register_task(self, task):
+        if (task.name is None):
+            if isinstance(task, tk.Server):
+                family = [tsk for tsk in self.tasks
+                          if isinstance(tsk, tk.Server)]
+                fam_name = "Server"
+            if (isinstance(task, tk.Periodic) or
+                    isinstance(task, tk.Aperiodic)):
+                family = [tsk for tsk in self.tasks
+                          if (isinstance(task, tk.Periodic) or
+                              isinstance(task, tk.Aperiodic))]
+                fam_name = "Task"
+            if (len(family) == 0):
+                task.name = fam_name
+            else:
+                if (len(family) == 1):
+                    family[0].name = fam_name + " 1"
+                task.name = fam_name + " " + str(len(family) + 1)
         self.tasks.append(task)
 
     def upd_prio_order(self, current_time):
@@ -82,13 +99,13 @@ class Generic():
                                gridspec_kw={'height_ratios': plt_ratios})
         if (sum(plt_counts) == 1):
             ax = [ax]
-        j=0
+        j = 0
         for i in range(0, len(self.tasks)):
             self.tasks[i].subplot([ax[k] for k in range(j, j+plt_counts[i])],
                                   end_time=self.end_time)
             j += plt_counts[i]
 
-        fig.set_size_inches(ax[0].get_xlim()[1]/4,sum(plt_counts))
+        fig.set_size_inches(ax[0].get_xlim()[1]/4, sum(plt_counts))
         fig.tight_layout()
         # fig.savefig("temp.svg")
         return fig
@@ -239,11 +256,10 @@ class LDF(Generic):
             task_ids = [i for i in tasks]
             task_succ = {}
             for task_id in task_ids:
-                task_succ[task_id] = [j for i, j in self.edges if i==task_id]
+                task_succ[task_id] = [j for i, j in self.edges if i == task_id]
             while (len(task_ids) != 0):
                 ready = []
                 for task_id in task_ids:
-                    task = tasks[task_id]
                     pending = [i for i in task_succ[task_id] if i in task_ids]
                     if (len(pending) == 0):
                         ready.append(task_id)
@@ -251,7 +267,6 @@ class LDF(Generic):
                                      for i in ready])]
                 self.prio_queue = [tasks[j]] + self.prio_queue
                 task_ids.remove(j)
-
 
 
 class EDFStar(Generic):
@@ -264,7 +279,7 @@ class EDFStar(Generic):
         task_ids = [i for i in tasks]
         task_pred = {}
         for task_id in task_ids:
-            task_pred[task_id] = [i for i,j in self.edges if j==task_id]
+            task_pred[task_id] = [i for i, j in self.edges if j == task_id]
         while (len(task_ids) != 0):
             for task_id in task_ids:
                 task = tasks[task_id]
@@ -280,7 +295,7 @@ class EDFStar(Generic):
         task_ids = [i for i in tasks]
         task_succ = {}
         for task_id in task_ids:
-            task_succ[task_id] = [j for i, j in self.edges if i==task_id]
+            task_succ[task_id] = [j for i, j in self.edges if i == task_id]
         while (len(task_ids) != 0):
             for task_id in task_ids:
                 task = tasks[task_id]
@@ -296,7 +311,6 @@ class EDFStar(Generic):
     def modify_tasks(self, rel_simplification=False):
         self.modify_releases(rel_simplification)
         self.modify_deadlines()
-
 
     def create(self, end_time, rel_simplification=False):
         self.modify_tasks(rel_simplification)

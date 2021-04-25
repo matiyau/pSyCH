@@ -99,8 +99,9 @@ class Generic():
 
 
 class Periodic(Generic):
-    def __init__(self, index, c, t, d=None, phase=0, aj=0):
-        Generic.__init__(self, "Task " + str(index),
+    def __init__(self, c, t, d=None, phase=0, aj=0, i=None):
+        Generic.__init__(self,
+                         ("Task " + str(i)) if i is not None else None,
                          {"c": c, "t": t, "d": t if d is None else d,
                           "p": phase})
         self.aj = aj
@@ -141,9 +142,9 @@ class Periodic(Generic):
 
 
 class Aperiodic(Generic):
-    def __init__(self, index, c, a=0, d=-1):
-        Generic.__init__(self, "Task " + str(index), {"a": a, "c": c, "d": d,
-                                                      "c_rem": c})
+    def __init__(self, c, a=0, d=-1, i=None):
+        Generic.__init__(self, ("Task " + str(i)) if i is not None else None,
+                         {"a": a, "c": c, "d": d, "c_rem": c})
         self.ds_abs = []
         if (d > 0):
             self.set_absolute_deadline(self.a + self.d)
@@ -190,9 +191,9 @@ class Aperiodic(Generic):
 
 
 class Server(Generic):
-    def __init__(self, q, t, index=None):
-        Generic.__init__(self, "Server" + ((" " + str(index)) if index is not
-                                           None else ""),
+    def __init__(self, q, t, i=None):
+        Generic.__init__(self, ("Server " + str(i))
+                         if i is not None else None,
                          {"q": q, "q_rem": 0, "c": q, "t": t})
         self.u = q/t
         self.q_rem = 0
@@ -238,7 +239,10 @@ class Server(Generic):
             if (self.jobs[i].a > job.a):
                 break
             i += 1
-        job.name = job.name.replace("Task", "Job")
+        if (job.name is None):
+            job.name = "Job " + str(len(self.jobs) + 1)
+        elif ("Task" in job.name):
+            job.name = job.name.replace("Task", "Job")
         self.jobs.insert(i, job)
 
     def modify_job(self, current_time, job_index):
