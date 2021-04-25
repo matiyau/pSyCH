@@ -44,6 +44,10 @@ class Generic():
                 task.name = fam_name + " " + str(len(family) + 1)
         self.tasks.append(task)
 
+    def register_tasks(self, tasks):
+        for task in tasks:
+            self.register_task(task)
+
     def upd_prio_order(self, current_time):
         self.prio_queue = [task for task in self.tasks]
 

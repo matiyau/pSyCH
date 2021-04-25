@@ -245,6 +245,10 @@ class Server(Generic):
             job.name = job.name.replace("Task", "Job")
         self.jobs.insert(i, job)
 
+    def attach_jobs(self, jobs):
+        for job in jobs:
+            self.attach_job(job)
+
     def modify_job(self, current_time, job_index):
         return
 
