@@ -91,7 +91,7 @@ class Generic():
                 break
         self.end_time = end_time_auto
 
-    def plot(self):
+    def plot(self, op_path=None):
         plt_reqs = [task.get_subplot_req() for task in self.tasks]
 
         plt_counts = [len(i) for i in plt_reqs]
@@ -111,7 +111,14 @@ class Generic():
 
         fig.set_size_inches(ax[0].get_xlim()[1]/4, sum(plt_counts))
         fig.tight_layout()
-        # fig.savefig("temp.svg")
+        if (op_path is not None):
+            fig.savefig(op_path)
+        return fig
+
+    def full(self, tasks, time, op_path=None):
+        self.register_tasks(tasks)
+        self.create(time)
+        fig = self.plot(op_path)
         return fig
 
 
@@ -272,6 +279,13 @@ class LDF(Generic):
                 self.prio_queue = [tasks[j]] + self.prio_queue
                 task_ids.remove(j)
 
+    def full(self, tasks, time, edges, op_path=None):
+        self.register_tasks(tasks)
+        self.set_constraints(edges)
+        self.create(time)
+        fig = self.plot(op_path)
+        return fig
+
 
 class EDFStar(Generic):
     def set_constraints(self, edges):
@@ -319,7 +333,13 @@ class EDFStar(Generic):
     def create(self, end_time, rel_simplification=False):
         self.modify_tasks(rel_simplification)
         Generic.create(self, end_time)
-        pass
+
+    def full(self, tasks, time, edges, rel_simplification=False, op_path=None):
+        self.register_tasks(tasks)
+        self.set_constraints(edges)
+        self.create(time, rel_simplification)
+        fig = self.plot(op_path)
+        return fig
 
 
 class Monotonic(Generic):
