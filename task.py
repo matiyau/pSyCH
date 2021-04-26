@@ -192,9 +192,10 @@ class Aperiodic(Generic):
 
 class Server(Generic):
     def __init__(self, q, t, i=None):
+        # "d" is assigned only as a dummy (for compatibility with prdc tasks)
         Generic.__init__(self, ("Server " + str(i))
                          if i is not None else None,
-                         {"q": q, "q_rem": 0, "c": q, "t": t})
+                         {"q": q, "q_rem": 0, "c": q, "t": t, "d": t})
         self.u = q/t
         self.q_rem = 0
         self.q_logs = np.array([[], []])
