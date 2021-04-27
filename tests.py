@@ -59,21 +59,21 @@ def edf_prdc_sched(tasks):
             break
     U = ut.get_total_u(tasks)
     params["U"] = U
+    L_star = ut.get_L_star(tasks)
+    H = ut.get_hyperperiod(tasks)
+    D_max = ut.get_d_max(tasks)
+    L = min(H, max(D_max, L_star))
+    ds = ut.get_ds(tasks, L)
+    params["L*"] = L_star
+    params["H"] = H
+    params["D_max"] = D_max
+    params["L"] = L
     if (U > 1):
         sched = False
     elif eq:
         sched = True
     else:
         sched = True
-        L_star = ut.get_L_star(tasks)
-        H = ut.get_hyperperiod(tasks)
-        D_max = ut.get_d_max(tasks)
-        L = min(H, max(D_max, L_star))
-        ds = ut.get_ds(tasks, L)
-        params["L*"] = L_star
-        params["H"] = H
-        params["D_max"] = D_max
-        params["L"] = L
         g_vals = {}
         for d in ds:
             g = ut.get_g_val(tasks, d)

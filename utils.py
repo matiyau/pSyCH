@@ -21,6 +21,8 @@ def flt_gcd(flts):
 
 def filter_sequence(seq):
     brk_pts = np.where(seq[1][:-1] != seq[1][1:])[0]
+    if (brk_pts.size == 0):
+        return seq
     brk_pts = np.unique(np.concatenate([[0], brk_pts, brk_pts+1,
                                         [seq[1].size-1]]))
     return seq[:, brk_pts]
