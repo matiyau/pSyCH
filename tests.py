@@ -30,8 +30,10 @@ def dm_prdc_sched(tasks):
     sched = True
     params = {}
     params["R"] = {}
-    for task in tasks:
-        index = task.get_id()
+    U = ut.get_total_u(tasks)
+    params["U"] = U
+    for index in range(1, len(tasks)+1):
+        task = tasks[index-1]
         Rs = [task.c]
         while True:
             i = 0
