@@ -130,14 +130,14 @@ class Periodic(Generic):
     def subplot(self, axs, end_time=-1):
         self.plt_template(axs[0], end_time=end_time)
         if (end_time == -1):
-            end_time = self.exec_logs[0].max()
+            end_time = int(self.exec_logs[0].max())
         if (self.d == self.t):
-            for i in range(self.p, end_time+1, self.t):
+            for i in np.arange(self.p, end_time+1, self.t):
                 axs[0].plot([i, i], [0, 1.5], color="#000000")
         else:
-            for i in range(self.p, end_time+1, self.t):
+            for i in np.arange(self.p, end_time+1, self.t):
                 ut.arrow(axs[0], i, "#0000ff", down=False)
-            for i in range(self.p + self.d, end_time+1, self.t):
+            for i in np.arange(self.p + self.d, end_time+1, self.t):
                 ut.arrow(axs[0], i, "#ff0000")
 
 
