@@ -9,20 +9,21 @@ Created on Tue Apr 20 13:01:25 2021
 import math
 from . import utils as ut
 
+
 def rm_prdc_sched(tasks):
     params = {}
     U = ut.get_total_u(tasks)
     params["U"] = U
     if (U > 1):
-        sched = -1 # Definitely not schedulable
+        sched = -1  # Definitely not schedulable
     else:
         HB = ut.get_P(tasks)
         params["HB"] = HB
         params["LL"] = U
         if (HB <= 2):
-            sched = 1 # Definitely schedulable
+            sched = 1  # Definitely schedulable
         else:
-            sched = 0 # Might be schedulable
+            sched = 0  # Might be schedulable
     return sched, params
 
 
