@@ -19,6 +19,7 @@ def flt_gcd(flts):
     d_lcm = np.lcm.reduce([frac.denominator for frac in fracs])
     return n_gcd/d_lcm
 
+
 def filter_sequence(seq):
     brk_pts = np.where(seq[1][:-1] != seq[1][1:])[0]
     if (brk_pts.size == 0):
@@ -46,6 +47,7 @@ def get_d_max(tasks):
 
 def get_hyperperiod(tasks):
     return np.lcm.reduce([task.t for task in tasks])
+
 
 def get_L_star(tasks):
     L = 0

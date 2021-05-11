@@ -414,6 +414,6 @@ class RM(Monotonic):
                 task.update_budget(current_time)
 
 
-class DM(Generic):
+class DM(Monotonic):
     def __init__(self):
         Monotonic.__init__(self, "d")
