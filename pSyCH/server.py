@@ -40,7 +40,7 @@ class PS(tk.Server):
     def get_self_crit_tm(self, current_time):
         """
         Return the next time instant at which the server can begin executing
-        jobs. This is equal to the next replinishment time if budget is
+        jobs. This is equal to the next replenishment time if budget is
         exhausted, or current time if budget is avaialble.
 
         Parameters
@@ -130,7 +130,7 @@ class TBS(tk.Server):
         q : float
             Max budget.
         t : float
-            Replinishment period.
+            replenishment period.
         i : int or str or None, optional
             ID for setting the task name. If None, no task name is registered.
             The default is None.

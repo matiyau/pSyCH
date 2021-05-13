@@ -183,7 +183,7 @@ def ps_dim(tasks):
         |br|
         "P" - HB product.
         |br|
-        "T" - Suggested budget replinishment period for the server.
+        "T" - Suggested budget replenishment period for the server.
         |br|
         "C" - Suggested max budget for the server.
 
@@ -219,7 +219,7 @@ def ds_dim(tasks):
         |br|
         "P" - HB product.
         |br|
-        "T" - Suggested budget replinishment period for the server.
+        "T" - Suggested budget replenishment period for the server.
         |br|
         "C" - Suggested max budget for the server.
 

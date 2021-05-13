@@ -77,7 +77,7 @@ class Generic():
         """
         Get the next instant (wrt the current time), at which a change in the
         task parameters is executed (E.g., completion, new arrival,
-        budget exhaustion, budget replinishment, etc.).
+        budget exhaustion, budget replenishment, etc.).
 
         Caution
         -------
@@ -600,7 +600,7 @@ class Server(Generic):
         q : float
             Max Budget.
         t : float
-            Replinishment Period.
+            replenishment Period.
         i : int or str or None, optional
             ID for setting the task name. If None, no task name is registered.
             The default is None.
@@ -638,7 +638,7 @@ class Server(Generic):
     def query(self, current_time):
         """
         Return the next crucial time by quering all attached jobs and
-        considering budget replinishment times.
+        considering budget replenishment times.
 
         Parameters
         ----------
