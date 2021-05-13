@@ -839,7 +839,7 @@ class Server(Generic):
             Next crucial time instant (wrt the specified current time).
 
         """
-        return current_time + self.unit
+        return -1
 
     def get_rem_budget(self):
         """
@@ -892,8 +892,9 @@ class Server(Generic):
 
     def get_subplot_req(self):
         """
-        Returns the height proportions of subplots required by the server object
-        in the figure. (1.5 for budget and 1 for execution).
+        Returns the height proportions of subplots required by the server
+        object in the figure. (1.5 for execution logs and max budget for
+        budget logs).
 
         Returns
         -------
@@ -901,7 +902,6 @@ class Server(Generic):
             Proportions of height for the budget and execution subplots.
 
         """
-        # 1 For Budget and 1 For Jobs
         return (1.5, self.q)
 
     def subplot(self, axs, end_time=-1):
@@ -912,7 +912,7 @@ class Server(Generic):
         ----------
         axs : numpy.ndarray of matplotlib.axes._subplots.AxesSubplot
             Array of axes objects. The 0th element will be used for plotting
-            the execution and the 1st for plottinh budget.
+            the execution and the 1st for plotting budget.
         end_time : float, optional
             Maximum time value for the x-axis. If -1, this limit will be
             automatically selected. The default is -1.
