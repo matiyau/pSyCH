@@ -82,3 +82,9 @@ html_theme_options = {
 html_static_path = ['_static']
 
 add_module_names = False
+
+rst_prolog = """
+.. |br| raw:: html
+
+   <br />
+   """
