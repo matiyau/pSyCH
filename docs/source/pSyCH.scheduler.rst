@@ -1,5 +1,5 @@
-pSyCH.scheduler module
-======================
+pSyCH.scheduler
+===============
 
 .. automodule:: pSyCH.scheduler
    :members:

@@ -1,5 +1,5 @@
-pSyCH.utils module
-==================
+pSyCH.utils
+===========
 
 .. automodule:: pSyCH.utils
    :members:

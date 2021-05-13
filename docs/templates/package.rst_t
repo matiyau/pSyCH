@@ -29,7 +29,7 @@
 {% else %}
 {%- for submodule in submodules %}
 {% if show_headings %}
-{{- [submodule, "module"] | join(" ") | e | heading(2) }}
+{{- submodule | e | heading(2) }}
 {% endif %}
 {{ automodule(submodule, automodule_options) }}
 {% endfor %}

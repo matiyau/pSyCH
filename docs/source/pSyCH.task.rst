@@ -1,5 +1,5 @@
-pSyCH.task module
-=================
+pSyCH.task
+==========
 
 .. automodule:: pSyCH.task
    :members:

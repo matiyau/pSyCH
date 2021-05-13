@@ -1,5 +1,5 @@
-pSyCH.server module
-===================
+pSyCH.server
+============
 
 .. automodule:: pSyCH.server
    :members:

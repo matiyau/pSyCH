@@ -1,5 +1,5 @@
-pSyCH.tests module
-==================
+pSyCH.tests
+===========
 
 .. automodule:: pSyCH.tests
    :members:
