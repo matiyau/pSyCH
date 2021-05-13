@@ -1,0 +1,7 @@
+numpy
+pygit2
+svgling
+matplotlib
+sphinxcontrib_napoleon
+sphinx_rtd_theme
+m2r2
