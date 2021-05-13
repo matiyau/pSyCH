@@ -17,11 +17,11 @@ from pygit2 import Repository
 _SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 sys.path.insert(0, os.path.join(_SCRIPT_DIR, '../'))
-# sys.path.insert(0, os.path.join(_SCRIPT_DIR, '../PySched'))
+# sys.path.insert(0, os.path.join(_SCRIPT_DIR, '../pSyCH'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'PySched'
+project = 'pSyCH'
 copyright = '2021, Nishad Mandlik'
 author = 'Nishad Mandlik'
 
@@ -38,7 +38,7 @@ def linkcode_resolve(domain, info):
     if not info['module']:
         return None
     filename = info['module'].replace('.', '/')
-    return "https://github.com/matiyau/PySched/tree/" + branch + \
+    return "https://github.com/matiyau/pSyCH/tree/" + branch + \
         "/" + filename + ".py"
 
 

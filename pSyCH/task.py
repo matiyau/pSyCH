@@ -722,7 +722,7 @@ class Server(Generic):
 
         Parameters
         ----------
-        job : PySched.task.Aperiodic
+        job : pSyCH.task.Aperiodic
             Aperioidc job to be attached to the server.
 
         Returns
@@ -747,7 +747,7 @@ class Server(Generic):
 
         Parameters
         ----------
-        jobs : list of PySched.task.Aperiodic
+        jobs : list of pSyCH.task.Aperiodic
             List of perioidc jobs to be attached to the server.
 
         Returns
@@ -811,7 +811,7 @@ class Server(Generic):
 
         Returns
         -------
-        list of PySched.task.Aperiodic
+        list of pSyCH.task.Aperiodic
             List of pending jobs.
 
         """
