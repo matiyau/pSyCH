@@ -18,6 +18,14 @@ import svgling as sl
 
 class Generic():
     def __init__(self):
+        """
+        Initialize a generic scheduler object.
+
+        Returns
+        -------
+        None.
+
+        """
         self.tasks = []
         self.crit_tms = [0]
         self.prio_queue = []
@@ -25,6 +33,20 @@ class Generic():
         self.unit = 1
 
     def register_task(self, task):
+        """
+        Register a task with the scheduler
+
+        Parameters
+        ----------
+        task : pSyCH.task.Periodic or pSyCH.task.Aperiodic or pSyCH.task.Server
+            Task (Perioidc, Aperiodic or Server) object to be attached to the
+            scheduler.
+
+        Returns
+        -------
+        None.
+
+        """
         if (task.name is None):
             if isinstance(task, tk.Server):
                 family = [tsk for tsk in self.tasks
@@ -45,13 +67,59 @@ class Generic():
         self.tasks.append(task)
 
     def register_tasks(self, tasks):
+        """
+        Register multiple tasks to the scheduler
+
+        Parameters
+        ----------
+        tasks : list
+            List of Task objects to be attached to the scheduler. Each item
+            may be a different type of task (Periodic, Aperiodic or Server).
+
+        Returns
+        -------
+        None.
+
+        """
         for task in tasks:
             self.register_task(task)
 
     def upd_prio_order(self, current_time):
+        """
+        Compute the priority order of registered tasks at the specified time.
+
+        Caution
+        -------
+        This is only a syntactic template for creating the priority order.
+        The derived classes (for a specific type of scheduler) may require
+        an specialised implementation.
+
+        Parameters
+        ----------
+        current_time : float
+            Time at which the priority order needs to be computed.
+
+        Returns
+        -------
+        None.
+
+        """
         self.prio_queue = [task for task in self.tasks]
 
     def create(self, end_time):
+        """
+        Create the schedule for the registered tasks.
+
+        Parameters
+        ----------
+        end_time : float
+            Maximum time coordinate for the schedule.
+
+        Returns
+        -------
+        None.
+
+        """
         self.end_time = end_time
         for task in self.tasks:
             task.reset()
@@ -92,6 +160,21 @@ class Generic():
         self.end_time = end_time_auto
 
     def plot(self, op_path=None):
+        """
+        Create a figure containing the subplots for each registered task.
+
+        Parameters
+        ----------
+        op_path : str or None, optional
+            Path to save the created figure. If None, the figure is not saved.
+            The default is None.
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            Created figure object.
+
+        """
         plt_reqs = [task.get_subplot_req() for task in self.tasks]
 
         plt_counts = [len(i) for i in plt_reqs]
@@ -116,6 +199,27 @@ class Generic():
         return fig
 
     def full(self, tasks, time, op_path=None):
+        """
+        Run the complete process which includes registering the tasks,
+        creation of schedule and generation of the figure.
+
+        Parameters
+        ----------
+        tasks : list
+            List of Task objects to be attached to the scheduler. Each item
+            may be a different type of task (Periodic, Aperiodic or Server).
+        time : float
+            Maximum time coordinate for the schedule.
+        op_path : str or None, optional
+            Path to save the created figure. If None, the figure is not saved.
+            The default is None.
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            Created figure object.
+
+        """
         self.register_tasks(tasks)
         self.create(time)
         fig = self.plot(op_path)
@@ -124,6 +228,20 @@ class Generic():
 
 class FCFS(Generic):
     def upd_prio_order(self, current_time):
+        """
+        Compute the priority order of registered tasks at the specified time,
+        for a First Come First Served scheduling policy.
+
+        Parameters
+        ----------
+        current_time : float
+            Time at which the priority order needs to be computed.
+
+        Returns
+        -------
+        None.
+
+        """
         if (len(self.prio_queue) == 0):
             srt = [i for _, i in
                    sorted(zip([task.a for task in self.tasks],
@@ -138,6 +256,20 @@ class FCFS(Generic):
 
 class EDD(Generic):
     def upd_prio_order(self, current_time):
+        """
+        Compute the priority order of registered tasks at the specified time,
+        for an Earliest Due Date scheduling policy.
+
+        Parameters
+        ----------
+        current_time : float
+            Time at which the priority order needs to be computed.
+
+        Returns
+        -------
+        None.
+
+        """
         if (len(self.prio_queue) == 0):
             srt = [i for _, i in
                    sorted(zip([task.d for task in self.tasks],
@@ -150,6 +282,20 @@ class EDD(Generic):
 
 class EDF(Generic):
     def upd_prio_order(self, current_time):
+        """
+        Compute the priority order of registered tasks at the specified time,
+        for an Earliest Deadline First scheduling policy.
+
+        Parameters
+        ----------
+        current_time : float
+            Time at which the priority order needs to be computed.
+
+        Returns
+        -------
+        None.
+
+        """
         unq = np.unique([task.get_absolute_deadline(current_time)
                          for task in self.tasks])
 
@@ -173,6 +319,27 @@ class EDF(Generic):
 
 class Bratley(Generic):
     def get_tree(self, elapsed_time, tasks, pruning=True):
+        """
+        Return a nested list which defines the Bratley tree
+
+        Parameters
+        ----------
+        elapsed_time : float
+            Time elapsed in executing tasks till now.
+        tasks : list of pSyCH.task.Aperiodic
+            Aperiodic tasks, on which the brute-force tree creation is
+            performed.
+        pruning : bool, optional
+            Specifies whether the pruning rule should be applied during
+            creation of the tree. If False, the entire tree is created,
+            thus neglecting all possible optimizations. The default is False.
+
+        Returns
+        -------
+        nested list
+            Nested list representation of a tree.
+
+        """
         tree = []
         for i in range(0, len(tasks)):
             task = tasks[i]
@@ -195,17 +362,54 @@ class Bratley(Generic):
         return tree
 
     def create(self, pruning=True):
+        """
+        Create the schedule tree for the registered tasks.
+
+        Parameters
+        ----------
+        pruning : bool, optional
+            Specifies whether the pruning rule should be applied during
+            creation of the tree. If False, the entire tree is created,
+            thus neglecting all possible optimizations. The default is False.
+
+        Returns
+        -------
+        None.
+
+        """
         tree = ["(0, )"]
         tree += self.get_tree(0, self.tasks, pruning)
         self.tree = tree
         return tree
 
     def plot(self):
+        """
+        Draw an interactive python figure containing the tree for the created
+        schedule.
+
+        Returns
+        -------
+        None.
+
+        """
         sl.draw_tree(self.tree)
 
 
 class Spring(Generic):
     def __init__(self, h_exp):
+        """
+        Initialize a Spring scheduler object.
+
+        Parameters
+        ----------
+        h_exp : str
+            String representing the mathematical heuristic expression.
+
+        Returns
+        -------
+        None.
+
+        """
         Generic.__init__(self)
         self.H_coeffs = {"a": 0, "C": 0, "d": 0, "D": 0, "L": 0}
         terms = [term.strip() for term in h_exp.split("+")]
@@ -225,6 +429,23 @@ class Spring(Generic):
         return H_val
 
     def get_tree(self, elapsed_time, tasks):
+        """
+        Return a nested list which defines the Spring tree
+
+        Parameters
+        ----------
+        elapsed_time : float
+            Time elapsed in executing tasks till now.
+        tasks : list of pSyCH.task.Aperiodic
+            Aperiodic tasks, on which the heuristic tree creation is
+            performed.
+
+        Returns
+        -------
+        nested list
+            Nested list representation of a tree.
+
+        """
         tree = []
         H_vals = []
         elp_times_new = []
@@ -248,20 +469,63 @@ class Spring(Generic):
         return tree
 
     def create(self):
+        """
+        Create the schedule tree for the registered tasks.
+
+        Returns
+        -------
+        None.
+
+        """
         tree = ["(, )"]
         tree += self.get_tree(0, self.tasks)
         self.tree = tree
         return tree
 
     def plot(self):
+        """
+        Draw an interactive python figure containing the tree for the created
+        schedule.
+
+        """
         sl.draw_tree(self.tree)
 
 
 class LDF(Generic):
     def set_constraints(self, edges):
+        """
+        Set the task contstraints.
+
+        Parameters
+        ----------
+        edges : array-like
+            2D array containing the task dependencies (constraints).
+            An element equal to (a, b) represnts a path from task with ID a
+            to task with ID b. In other words, b depends on a, and cannot start
+            before a is completed.
+
+        Returns
+        -------
+        None.
+
+        """
         self.edges = edges
 
     def upd_prio_order(self, current_time):
+        """
+        Compute the priority order of registered tasks at the specified time,
+        for an Latest Deadline First scheduling policy.
+
+        Parameters
+        ----------
+        current_time : float
+            Time at which the priority order needs to be computed.
+
+        Returns
+        -------
+        None.
+
+        """
         if (len(self.prio_queue) == 0):
             tasks = {task.get_id(): task for task in self.tasks}
             task_ids = [i for i in tasks]
@@ -280,6 +544,32 @@ class LDF(Generic):
                 task_ids.remove(j)
 
     def full(self, tasks, time, edges, op_path=None):
+        """
+        Run the complete process which includes registering the tasks,
+        creation of schedule and generation of the figure.
+
+        Parameters
+        ----------
+        tasks : list
+            List of Task objects to be attached to the scheduler. Each item
+            may be a different type of task (Periodic, Aperiodic or Server).
+        time : float
+            Maximum time coordinate for the schedule.
+        edges : array-like
+            2D array containing the task dependencies (constraints).
+            An element equal to (a, b) represnts a path from task with ID a
+            to task with ID b. In other words, b depends on a, and cannot start
+            before a is completed.
+        op_path : str or None, optional
+            Path to save the created figure. If None, the figure is not saved.
+            The default is None.
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            Created figure object.
+
+        """
         self.register_tasks(tasks)
         self.set_constraints(edges)
         self.create(time)
@@ -289,9 +579,40 @@ class LDF(Generic):
 
 class EDFStar(Generic):
     def set_constraints(self, edges):
+        """
+        Set the task contstraints.
+
+        Parameters
+        ----------
+        edges : array-like
+            2D array containing the task dependencies (constraints).
+            An element equal to (a, b) represnts a path from task with ID a
+            to task with ID b. In other words, b depends on a, and cannot start
+            before a is completed.
+
+        Returns
+        -------
+        None.
+
+        """
         self.edges = edges
 
     def modify_releases(self, rel_simplification=False):
+        """
+        Modify the release times of all registered tasks according to the
+        specified constraints.
+
+        Parameters
+        ----------
+        rel_simplification : bool, optional
+            If True, the modification of release times will be simplified by
+            omitting a term from the calculation. The default is False.
+
+        Returns
+        -------
+        None.
+
+        """
         k = int(not rel_simplification)
         tasks = {task.get_id(): task for task in self.tasks}
         task_ids = [i for i in tasks]
@@ -309,6 +630,15 @@ class EDFStar(Generic):
                     break
 
     def modify_deadlines(self):
+        """
+        Modify the deadlines of all registered tasks according to the
+        specified constraints.
+
+        Returns
+        -------
+        None.
+
+        """
         tasks = {task.get_id(): task for task in self.tasks}
         task_ids = [i for i in tasks]
         task_succ = {}
@@ -327,14 +657,74 @@ class EDFStar(Generic):
                     break
 
     def modify_tasks(self, rel_simplification=False):
+        """
+        Modify the release times and deadlines of all registered tasks
+        according to the specified constraints.
+
+        Parameters
+        ----------
+        rel_simplification : bool, optional
+            If True, the modification of release times will be simplified by
+            omitting a term from the calculation. The default is False.
+
+        Returns
+        -------
+        None.
+
+        """
         self.modify_releases(rel_simplification)
         self.modify_deadlines()
 
     def create(self, end_time, rel_simplification=False):
+        """
+        Create the schedule for the registered tasks.
+
+        Parameters
+        ----------
+        end_time : float
+            Maximum time coordinate for the schedule.
+        rel_simplification : bool, optional
+            If True, the modification of release times will be simplified by
+            omitting a term from the calculation. The default is False.
+
+        Returns
+        -------
+        None.
+
+        """
         self.modify_tasks(rel_simplification)
         Generic.create(self, end_time)
 
     def full(self, tasks, time, edges, rel_simplification=False, op_path=None):
+        """
+        Run the complete process which includes registering the tasks,
+        creation of schedule and generation of the figure.
+
+        Parameters
+        ----------
+        tasks : list
+            List of Task objects to be attached to the scheduler. Each item
+            may be a different type of task (Periodic, Aperiodic or Server).
+        time : float
+            Maximum time coordinate for the schedule.
+        edges : array-like
+            2D array containing the task dependencies (constraints).
+            An element equal to (a, b) represnts a path from task with ID a
+            to task with ID b. In other words, b depends on a, and cannot start
+            before a is completed.
+        rel_simplification : bool, optional
+            If True, the modification of release times will be simplified by
+            omitting a term from the calculation. The default is False.
+        op_path : str or None, optional
+            Path to save the created figure. If None, the figure is not saved.
+            The default is None.
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            Created figure object.
+
+        """
         self.register_tasks(tasks)
         self.set_constraints(edges)
         self.create(time, rel_simplification)
@@ -344,10 +734,40 @@ class EDFStar(Generic):
 
 class Monotonic(Generic):
     def __init__(self, mntc_param):
+        """
+        Initialize a monotonic scheduler object. This is a fixed-priority
+        scheduler which uses a specified time attribute to decide the
+        priorities of registered tasks.
+
+        Parameters
+        ----------
+        mntc_param : str
+            Name of the time attribute which is to be used for deciding
+            priorities of registered tasks.
+
+        Returns
+        -------
+        None.
+
+        """
         Generic.__init__(self)
         self.mntc_param = mntc_param
 
     def upd_prio_order(self, current_time):
+        """
+        Compute the priority order of registered tasks at the specified time,
+        for a Monotonic scheduling policy.
+
+        Parameters
+        ----------
+        current_time : float
+            Time at which the priority order needs to be computed.
+
+        Returns
+        -------
+        None.
+
+        """
         param = self.mntc_param
         if (len(self.prio_queue) == 0):
             unq = np.unique([getattr(task, param) for task in self.tasks])
@@ -362,6 +782,17 @@ class Monotonic(Generic):
                 self.prio_queue += prdc
 
     def get_wcrts(self):
+        """
+        Get Worst-Case Response Times for each registered task.
+
+        Returns
+        -------
+        wcrts : dict containing int:list pairs
+            Dictionary keys correspond to IDs of registered tasks. The values
+            are lists containing the outputs of each step in the fixed-point
+            iteration, leading up to the WCRT.
+
+        """
         self.upd_prio_order(-1)
         wcrts = {task.get_id(): [task.c] for task in self.prio_queue}
         for i in range(0, len(self.prio_queue)):
@@ -376,6 +807,31 @@ class Monotonic(Generic):
         return wcrts
 
     def get_bcrts(self, ret_wcrt=False):
+        """
+        Get Best-Case Response Times for each registered task. Since BCRT
+        calculation requires the WCRT to be computed first, the WCRT output
+        can also be optionally returned with this function.
+
+        Parameters
+        ----------
+        ret_wcrt : bool, optional
+            Specifies whether the ootput of the WCRT function should be
+            returned. The default is False.
+
+        Returns
+        -------
+        wcrts : dict
+            | If ret_wcrt is False, dictionary keys correspond to IDs of
+            registered tasks. The values are lists containing the outputs of
+            each step in the fixed-point iteration, leading up to the BCRT.
+            | If ret_wcrt is True, the dictionary contains two keys - "bc"
+            and "wc". The value corresponding to "bc" is of the form mentioned
+            above (in the case when ret_wcrt is False). The value
+            corresponding to "wc" is of the form of the retruned by the
+            "get_wcrts" function.
+
+
+        """
         wcrts = self.get_wcrts()
         bcrts = {i: [wcrts[i][-1]] for i in wcrts}
         for i in range(0, len(self.prio_queue)):
@@ -393,6 +849,25 @@ class Monotonic(Generic):
             return bcrts
 
     def get_jitter(self):
+        """
+        Perform jitter analysis and return jitter values.
+
+        Returns
+        -------
+        dict
+            Dictionary containing the keys "jit" and "rt".
+            |
+            | The value corresponding to the "jit" key is a dictionary
+            containing the following keys-value pairs:
+            | RJ - dict containing the Task IDs as keys and corresponding
+            Response Jitter as values.
+            | FJ - dict containing the Task IDs as keys and corresponding
+            Finalization Jitter as values.
+            |
+            | The value corresponding to the "rt" key is of the form returned
+            by the "get_bcrts" function, for the case when ret_wcrt is True.
+
+        """
         rt = self.get_bcrts(True)
         jit = {"FJ": {}, "RJ": {}}
         for task in self.tasks:
@@ -404,9 +879,33 @@ class Monotonic(Generic):
 
 class RM(Monotonic):
     def __init__(self):
+        """
+        Initialize a Rate-Monotonic scheduler object.
+
+        Returns
+        -------
+        None.
+
+        """
         Monotonic.__init__(self, "t")
 
     def upd_prio_order(self, current_time):
+        """
+        Compute the priority order of registered tasks at the specified time,
+        for a Rate-Monotonic scheduling policy. The same procedure as the
+        base class is performed, but additionally, budgets of all registered
+        servers are updated.
+
+        Parameters
+        ----------
+        current_time : float
+            Time at which the priority order needs to be computed.
+
+        Returns
+        -------
+        None.
+
+        """
         Monotonic.upd_prio_order(self, current_time)
 
         for task in self.tasks:
@@ -416,4 +915,12 @@ class RM(Monotonic):
 
 class DM(Monotonic):
     def __init__(self):
+        """
+        Initialize a Deadline-Monotonic scheduler object.
+
+        Returns
+        -------
+        None.
+
+        """
         Monotonic.__init__(self, "d")
