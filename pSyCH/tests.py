@@ -11,6 +11,33 @@ from . import utils as ut
 
 
 def rm_prdc_sched(tasks):
+    """
+    Check schedulability of the given periodic tasks under RM scheduling.
+
+    Parameters
+    ----------
+    tasks : list of pSyCH.tasks.Periodic
+        Task set whose schedulability is to be checked.
+
+    Returns
+    -------
+    sched : int
+        |br|
+        If -1, the task set is definitely not schedulable (U > 1).
+        |br|
+        If 0, the task set might be schedulable (U <= 1 and HB > 2).
+        |br|
+        If 1, the task set is definitely schedulable (HB <= 2).
+    params : dict
+        The dictionary includes the following key-value pairs:
+        |br|
+        "U" - Total utilization of all tasks.
+        |br|
+        "HB" - HB product value.
+        |br|
+        "LL" - LL sum value.
+
+    """
     params = {}
     U = ut.get_total_u(tasks)
     params["U"] = U
@@ -28,6 +55,27 @@ def rm_prdc_sched(tasks):
 
 
 def dm_prdc_sched(tasks):
+    """
+    Check schedulability of the given periodic tasks under DM scheduling.
+
+    Parameters
+    ----------
+    tasks : list of pSyCH.tasks.Periodic
+        Task set whose schedulability is to be checked.
+
+    Returns
+    -------
+    sched : bool
+        True if the task set is schedulable, False otherwise.
+    params : dict
+        The dictionary includes the following key-value pairs:
+        |br|
+        "U" - Total utilization of all tasks.
+        |br|
+        "R" - Dictionary containing the task IDs as the keys and the list of
+        outputs of each step from the fixed-point iteration, as the values.
+
+    """
     sched = True
     params = {}
     params["R"] = {}
@@ -53,6 +101,35 @@ def dm_prdc_sched(tasks):
 
 
 def edf_prdc_sched(tasks):
+    """
+    Check schedulability of the given periodic tasks under EDF scheduling.
+
+    Parameters
+    ----------
+    tasks : list of pSyCH.tasks.Periodic
+        Task set whose schedulability is to be checked.
+
+    Returns
+    -------
+    sched : bool
+        True if the task set is schedulable, False otherwise.
+    params : dict
+        The dictionary includes the following key-value pairs:
+        |br|
+        "U" - Total utilization of all tasks.
+        |br|
+        "L*" - L* value for the task set.
+        |br|
+        "H" - Hyperperiod of the task set.
+        |br|
+        "D_max" - Maximum relative deadline among the tasks.
+        |br|
+        "L" - L value computed from "H", "D_max" and "L*"
+        |br|
+        "g" - Dictionary with the time coordinate, t, as the key and the
+        g-value, g(0, t) as the value.
+
+    """
     eq = True  # D=T condition
     sched = False
     params = {}
@@ -89,6 +166,28 @@ def edf_prdc_sched(tasks):
 
 
 def ps_dim(tasks):
+    """
+    Dimension a Polling Server such that it fits into the provided task set.
+
+    Parameters
+    ----------
+    tasks : list of pSyCH.tasks.Periodic
+        Task set whose schedulability is to be checked.
+
+    Returns
+    -------
+    sched : bool
+        True if the task set is schedulable, False otherwise.
+    params : dict
+        The dictionary includes the following key-value pairs:
+        |br|
+        "P" - HB product.
+        |br|
+        "T" - Suggested budget replinishment period for the server.
+        |br|
+        "C" - Suggested max budget for the server.
+
+    """
     params = {}
     P = ut.get_P(tasks)
     params["P"] = P
@@ -103,6 +202,28 @@ def ps_dim(tasks):
 
 
 def ds_dim(tasks):
+    """
+    Dimension a Deferable Server such that it fits into the provided task set.
+
+    Parameters
+    ----------
+    tasks : list of pSyCH.tasks.Periodic
+        Task set whose schedulability is to be checked.
+
+    Returns
+    -------
+    sched : bool
+        True if the task set is schedulable, False otherwise.
+    params : dict
+        The dictionary includes the following key-value pairs:
+        |br|
+        "P" - HB product.
+        |br|
+        "T" - Suggested budget replinishment period for the server.
+        |br|
+        "C" - Suggested max budget for the server.
+
+    """
     params = {}
     P = ut.get_P(tasks)
     params["P"] = P
