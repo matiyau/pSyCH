@@ -820,14 +820,15 @@ class Monotonic(Generic):
 
         Returns
         -------
-        wcrts : dict
-            | If ret_wcrt is False, dictionary keys correspond to IDs of
+        dict
+            If ret_wcrt is False, dictionary keys correspond to IDs of
             registered tasks. The values are lists containing the outputs of
             each step in the fixed-point iteration, leading up to the BCRT.
-            | If ret_wcrt is True, the dictionary contains two keys - "bc"
+            |br|
+            If ret_wcrt is True, the dictionary contains two keys - "bc"
             and "wc". The value corresponding to "bc" is of the form mentioned
             above (in the case when ret_wcrt is False). The value
-            corresponding to "wc" is of the form of the retruned by the
+            corresponding to "wc" is of the form returned by the
             "get_wcrts" function.
 
 
@@ -856,15 +857,17 @@ class Monotonic(Generic):
         -------
         dict
             Dictionary containing the keys "jit" and "rt".
-            |
-            | The value corresponding to the "jit" key is a dictionary
+            |br| |br|
+            The value corresponding to the "jit" key is a dictionary
             containing the following keys-value pairs:
-            | RJ - dict containing the Task IDs as keys and corresponding
+            |br|
+            "RJ" - dict containing the Task IDs as keys and corresponding
             Response Jitter as values.
-            | FJ - dict containing the Task IDs as keys and corresponding
+            |br|
+            "FJ" - dict containing the Task IDs as keys and corresponding
             Finalization Jitter as values.
-            |
-            | The value corresponding to the "rt" key is of the form returned
+            |br| |br|
+            The value corresponding to the "rt" key is of the form returned
             by the "get_bcrts" function, for the case when ret_wcrt is True.
 
         """
