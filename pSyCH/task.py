@@ -926,8 +926,9 @@ class Server(Generic):
         for i in range(0, len(self.jobs)):
             job = self.jobs[i]
             job.plt_template(axs[0], end_time=end_time, y_label=self.name,
-                             color=clrs[i], legend=True)
-            clr = "#" + hex(int(clrs[i][1:], 16) - 0x404040).upper()[2:]
+                             color=clrs[i % len(clrs)], legend=True)
+            clr = "#" + hex(int(clrs[i % len(clrs)][1:], 16) -
+                            0x404040).upper()[2:]
             ut.arrow(axs[0], job.a, clr, down=False)
             if (len(job.ds_abs) > 0):
                 for d in job.ds_abs[:-1]:
